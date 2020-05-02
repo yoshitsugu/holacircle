@@ -1,59 +1,95 @@
-import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { createSlice } from "@reduxjs/toolkit";
 import Circle from "models/Circle";
 
 type State = {
   rootCircle: Circle
 }
 
-  // roles: Role[]
-  // circles: Circle[]
+const rakuen = new Circle({
+  name: '楽園'
+})
+
+const hogekanri = new Circle({
+  name: '株式会社XXX ほげほげ管理基盤'
+})
+
+const launchUpDiv = new Circle({
+  name: 'LaunchUp Div',
+  circles: [
+    rakuen,
+    hogekanri
+  ]
+})
+
+const ojisan = new Circle({
+  name: 'おじさんファンクラブ',
+  circles: [
+  ]
+})
+
+const communityDiv = new Circle({
+  name: 'Community Div',
+  circles: [
+    ojisan
+  ]
+})
+
+
+const sengoku = new Circle({
+  name: '戦国 Subdiv',
+  circles: []
+})
+
+const seed = new Circle({
+  name: 'seed subdiv',
+  circles: []
+})
+
+const txdiv = new Circle({
+  name: 'TX Div',
+  circles: [
+    sengoku,
+    seed,
+  ]
+})
+
+const pm = new Circle({
+  name: 'プロジェクトマネジメント',
+  circles: [
+    txdiv,
+    launchUpDiv,
+    communityDiv,
+  ]
+
+});
+
+const onlineevent = new Circle({
+  name: 'オンラインイベント',
+  circles: []
+})
+
+const comunittymarketing = new Circle({
+  name: 'コミュニティーマーケティング',
+  circles: []
+})
+
+const kikaku = new Circle({
+  name: '企画',
+  circles: [
+    onlineevent,
+    comunittymarketing,
+  ]
+});
+
 const initialState: State = {
-  rootCircle: {
+  rootCircle: new Circle({
     name: 'sikmi',
-    roles: [
-      {
-        name: 'Circle Lead',
-        members: [
-          {
-            name: 'kuruma'
-          }
-        ]
-      }
-    ],
+    roles: [],
     circles: [
-      {
-        name: 'TV Div',
-        roles: [
-          {
-            name: 'Circle Lead',
-            members: [
-              {
-                name: 'kuruma'
-              }
-            ]
-          },
-          {
-            name: 'Circle Rep',
-            members: [
-              {
-                name: 'kamoc'
-              }
-            ]
-          },
-          {
-            name: '技術おじさん',
-            members: [
-              {
-                name: 'ynishi'
-              }
-            ]
-          }
-        ],
-        circles: [
-        ]
-      }
+      pm,
+      kikaku,
     ]
-  }
+  })
 }
 
 const circleModule = createSlice({
@@ -62,8 +98,5 @@ const circleModule = createSlice({
   reducers: {
   }
 })
-
-export const {
-} = circleModule.actions
 
 export default circleModule

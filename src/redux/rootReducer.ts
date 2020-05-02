@@ -1,8 +1,8 @@
 import { combineReducers } from '@reduxjs/toolkit'
-import taskModule from './modules/taskModule'
+import circleModule from './modules/circleModule'
 
 const rootReducer = combineReducers({
-  task: taskModule.reducer,
+  circle: circleModule.reducer,
 })
 
 export type RootState = ReturnType<typeof rootReducer>
