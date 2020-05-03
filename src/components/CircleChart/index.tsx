@@ -10,6 +10,10 @@ const Wrapper = styled.div`
   background: #fff;
   height: 100vh;
   width: 100vw;
+
+  *:focus {
+    outline: none;
+  }
 `;
 
 export interface HierarchyData {
