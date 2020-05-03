@@ -104,10 +104,7 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
       .attr('y', (d) => (d.y - v[1]) * k - (d.r * k) / 1.4)
       .attr('width', (d) => d.r * k * 1.4)
       .attr('height', (d) => d.r * k * 1.4)
-      .style('font-size', (d) => {
-        console.log('font-size', fontSize(d, k));
-        return fontSize(d, k);
-      });
+      .style('font-size', (d) => `${fontSize(d, k)}px`);
   }
 
   function zoom(d: HierarchyCircularNode<HierarchyData>) {
