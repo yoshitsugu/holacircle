@@ -77,8 +77,7 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .attr('class', 'circle-name')
     .style('opacity', (d) => (d === root || d.parent === root || d.parent?.parent === root ? 1 : 0));
 
-  const text = fo
-    .append('xhtml:div')
+  fo.append('xhtml:div')
     .style('line-height', 1.2)
     .style('width', '100%')
     .style('height', '100%')
@@ -118,7 +117,7 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
         return (t: number) => zoomTo(i(t));
       });
     fo.style('opacity', (d) => {
-      return d.parent?.parent === focus || d.parent == focus || d === focus ? 1 : 0;
+      return d.parent?.parent === focus || d.parent === focus || d === focus ? 1 : 0;
     });
   }
 
