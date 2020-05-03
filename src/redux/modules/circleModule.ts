@@ -1,102 +1,167 @@
-import { createSlice } from "@reduxjs/toolkit";
-import Circle from "models/Circle";
+import { createSlice } from '@reduxjs/toolkit';
+import Circle from 'models/Circle';
+import Role from 'models/Role';
+import Member from 'models/Member';
 
 type State = {
-  rootCircle: Circle
-}
+  rootCircle: Circle;
+};
 
-const rakuen = new Circle({
-  name: '楽園'
-})
+const tarou: Member = {
+  name: '鈴木 太郎',
+};
 
-const hogekanri = new Circle({
-  name: '株式会社XXX ほげほげ管理基盤'
-})
+const jirou: Member = {
+  name: '佐藤 次郎',
+};
 
-const launchUpDiv = new Circle({
-  name: 'LaunchUp Div',
-  circles: [
-    rakuen,
-    hogekanri
-  ]
-})
+const john: Member = {
+  name: 'ジョン スミス',
+};
 
-const ojisan = new Circle({
-  name: 'おじさんファンクラブ',
-  circles: [
-  ]
-})
+const facilitator: Role = {
+  name: 'ファシリテーター',
+  members: [tarou],
+};
 
-const communityDiv = new Circle({
-  name: 'Community Div',
-  circles: [
-    ojisan
-  ]
-})
+const secretary: Role = {
+  name: 'セクレタリー',
+  members: [tarou],
+};
 
+const lead: Role = {
+  name: 'サークルリード',
+  members: [tarou],
+};
 
-const sengoku = new Circle({
-  name: '戦国 Subdiv',
-  circles: []
-})
+const rep: Role = {
+  name: 'サークルレプ',
+  members: [tarou],
+};
 
-const seed = new Circle({
-  name: 'seed subdiv',
-  circles: []
-})
+const redWine: Role = {
+  name: '赤ワイン',
+  members: [tarou],
+};
 
-const txdiv = new Circle({
-  name: 'TX Div',
-  circles: [
-    sengoku,
-    seed,
-  ]
-})
+const whiteWine: Role = {
+  name: '白ワイン',
+  members: [],
+};
 
-const pm = new Circle({
-  name: 'プロジェクトマネジメント',
-  circles: [
-    txdiv,
-    launchUpDiv,
-    communityDiv,
-  ]
-
+const wine = new Circle({
+  name: 'ワイン',
+  roles: [facilitator, secretary, rep, lead, redWine, whiteWine],
 });
 
-const onlineevent = new Circle({
-  name: 'オンラインイベント',
-  circles: []
-})
+const weizen: Role = {
+  name: 'ヴァイツェン',
+  members: [tarou, jirou],
+};
 
-const comunittymarketing = new Circle({
-  name: 'コミュニティーマーケティング',
-  circles: []
-})
+const ipa: Role = {
+  name: 'IPA',
+  members: [john],
+};
 
-const kikaku = new Circle({
-  name: '企画',
-  circles: [
-    onlineevent,
-    comunittymarketing,
-  ]
+const blackBeer: Role = {
+  name: '黒ビール',
+  members: [],
+};
+
+const paleAle = new Circle({
+  name: 'ペールエール',
+  roles: [facilitator, secretary, rep, lead],
+});
+
+const whiteBeer = new Circle({
+  name: '白ビール',
+  roles: [facilitator, secretary, rep, lead],
+});
+
+const wiskey: Role = {
+  name: 'ウィスキー',
+  members: [],
+};
+const nihonshu: Role = {
+  name: '日本酒',
+  members: [],
+};
+
+const beer = new Circle({
+  name: 'ビール',
+  roles: [facilitator, secretary, rep, lead, weizen, ipa, blackBeer],
+  circles: [paleAle, whiteBeer],
+});
+
+const sake = new Circle({
+  name: '酒部',
+  roles: [facilitator, secretary, rep, lead, wiskey, nihonshu],
+  circles: [wine, beer],
+});
+
+const backend = new Circle({
+  name: 'Webバックエンド',
+  roles: [facilitator, secretary, rep, lead],
+  circles: [],
+});
+
+const frontend = new Circle({
+  name: 'Webフロントエンド',
+  roles: [facilitator, secretary, rep, lead],
+  circles: [],
+});
+
+const web = new Circle({
+  name: 'Web',
+  roles: [facilitator, secretary, rep, lead],
+  circles: [backend, frontend],
+});
+
+const ios = new Circle({
+  name: 'iOS',
+  roles: [facilitator, secretary, rep, lead],
+});
+
+const android = new Circle({
+  name: 'Android',
+  roles: [facilitator, secretary, rep, lead],
+});
+
+const engineer = new Circle({
+  name: 'エンジニア',
+  roles: [facilitator, secretary, rep, lead],
+  circles: [web, ios, android],
+});
+
+const smoke: Role = {
+  name: '燻製',
+  members: [john],
+};
+
+const anova: Role = {
+  name: '低温調理',
+  members: [john],
+};
+
+const cooking = new Circle({
+  name: '料理部',
+  roles: [facilitator, secretary, rep, lead, smoke, anova],
+  circles: [],
 });
 
 const initialState: State = {
   rootCircle: new Circle({
-    name: 'sikmi',
+    name: 'へこみ製作所',
     roles: [],
-    circles: [
-      pm,
-      kikaku,
-    ]
-  })
-}
+    circles: [sake, engineer, cooking],
+  }),
+};
 
 const circleModule = createSlice({
   name: 'circles',
   initialState,
-  reducers: {
-  }
-})
+  reducers: {},
+});
 
-export default circleModule
+export default circleModule;
