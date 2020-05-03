@@ -64,7 +64,7 @@ const CircleChart: FC<CircleChartProps> = ({ rootCircle }) => {
 
   useEffect(() => {
     if (d3Container.current) {
-      chart(d3Container.current, circleToChartData(rootCircle), 300, 300);
+      chart(d3Container.current, circleToChartData(rootCircle), 2000, 2000);
     }
   });
 

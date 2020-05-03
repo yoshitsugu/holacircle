@@ -77,7 +77,8 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .attr('class', 'circle-name')
     .style('opacity', (d) => (d === root || d.parent === root || d.parent?.parent === root ? 1 : 0));
 
-  fo.append('xhtml:div')
+  const text = fo
+    .append('xhtml:div')
     .style('line-height', 1.2)
     .style('width', '100%')
     .style('height', '100%')
@@ -87,6 +88,10 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .html((d) => d.data.name);
 
   zoomTo([root.x, root.y, root.r * 2]);
+
+  function fontSize(d: HierarchyCircularNode<HierarchyData>, k: number) {
+    return Math.max(10, 10 + (2 * (d.r * k)) / (4 + 4 * d.depth));
+  }
 
   function zoomTo(v: [number, number, number]) {
     const k = width / v[2];
@@ -99,7 +104,10 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
       .attr('y', (d) => (d.y - v[1]) * k - (d.r * k) / 1.4)
       .attr('width', (d) => d.r * k * 1.4)
       .attr('height', (d) => d.r * k * 1.4)
-      .attr('font-size', (d) => (d.r * k) / 5);
+      .style('font-size', (d) => {
+        console.log('font-size', fontSize(d, k));
+        return fontSize(d, k);
+      });
   }
 
   function zoom(d: HierarchyCircularNode<HierarchyData>) {
