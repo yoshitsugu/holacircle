@@ -1,18 +1,17 @@
-import Role from "./Role";
-
+import Role from './Role';
 
 export default class Circle {
-  name: string = ''
-  roles: Role[] = []
-  circles: Circle[] = []
+  name: string = '';
+  roles: Role[] = [];
+  circles: Circle[] = [];
 
   constructor(init: Partial<Circle>) {
-    Object.assign(this, init)
+    Object.assign(this, init);
   }
 
   scale(): number {
-    const subScales = this.circles.reduce((acc, circle) => acc + circle.scale(), 0)
+    const subScales =
+      this.circles.reduce((acc, circle) => acc + circle.scale(), 0) + this.roles.reduce((acc) => acc + 1, 0);
     return subScales + this.circles.length + 1;
   }
 }
-

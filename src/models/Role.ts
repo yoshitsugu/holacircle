@@ -1,9 +1,8 @@
-import Member from "./Member";
+import Member from './Member';
 
 interface Role {
-  name: string
-  members: Member[]
+  name: string;
+  members: Member[];
 }
 
-export default Role
-
+export default Role;

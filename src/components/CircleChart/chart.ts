@@ -6,7 +6,7 @@ import { HierarchyCircularNode } from 'd3';
 
 export default (container: SVGElement, data: HierarchyData, width: number, height: number) => {
   let pack = (data: HierarchyData): HierarchyCircularNode<HierarchyData> =>
-    d3.pack<HierarchyData>().size([width, height]).padding(3)(
+    d3.pack<HierarchyData>().size([width, height])(
       d3
         .hierarchy(data)
         .sum((d) => d.value)
@@ -33,7 +33,17 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .on('click', () => zoom(root));
 
   const nodeFill = (d: HierarchyCircularNode<HierarchyData>) => {
-    return d.data.isLabel ? 'none' : d.children ? color(d.depth) : 'white';
+    if (d.data.isLabel) {
+      return 'none';
+    } else if (!d.data.isCircle) {
+      if (d.data.members.length === 0) {
+        return '#fff';
+      } else {
+        return color(d.depth);
+      }
+    } else {
+      return color(d.depth);
+    }
   };
 
   const node = svg
@@ -43,7 +53,6 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .join('circle')
     .attr('title', (d) => (d.data.isLabel ? d.data.name : ''))
     .attr('fill', (d) => nodeFill(d))
-    .attr('pointer-events', (d) => (!d.children ? 'none' : null))
     .on('mouseover', function () {
       d3.select(this).attr('stroke', '#999');
     })
@@ -61,7 +70,7 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .data(root.descendants())
     .join('foreignObject')
     .attr('pointer-events', 'none')
-    .filter((d) => d.data.isLabel)
+    .filter((d) => d.data.isLabel || !d.data.isCircle)
     .attr('x', 0)
     .attr('y', 0)
     .attr('height', '200')
@@ -70,14 +79,13 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .style('opacity', (d) => (d === root || d.parent === root || d.parent?.parent === root ? 1 : 0));
 
   fo.append('xhtml:div')
-    .style('line-height', 1)
+    .style('line-height', 1.2)
     .style('width', '100%')
     .style('height', '100%')
     .style('display', 'flex')
     .style('justify-content', 'center')
     .style('align-items', 'center')
-
-    .html((d) => (d.data.isLabel ? d.data.name : ''));
+    .html((d) => d.data.name);
 
   zoomTo([root.x, root.y, root.r * 2]);
 
@@ -88,11 +96,11 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
 
     node.attr('transform', (d) => `translate(${(d.x - v[0]) * k},${(d.y - v[1]) * k})`);
     node.attr('r', (d) => d.r * k);
-    fo.attr('x', (d) => (d.x - v[0]) * k - (d.r * k) / 1.5)
-      .attr('y', (d) => (d.y - v[1]) * k - (d.r * k) / 1.5)
-      .attr('width', (d) => d.r * k * 1.5)
-      .attr('height', (d) => d.r * k * 1.5)
-      .attr('font-size', (d) => (d.r * k) / 4);
+    fo.attr('x', (d) => (d.x - v[0]) * k - (d.r * k) / 1.4)
+      .attr('y', (d) => (d.y - v[1]) * k - (d.r * k) / 1.4)
+      .attr('width', (d) => d.r * k * 1.4)
+      .attr('height', (d) => d.r * k * 1.4)
+      .attr('font-size', (d) => (d.r * k) / 5);
   }
 
   function zoom(d: HierarchyCircularNode<HierarchyData>) {

@@ -3,6 +3,8 @@ import styled from 'styled-components';
 import React, { FC, useEffect, useRef } from 'react';
 import Circle from 'models/Circle';
 import chart from './chart';
+import Role from 'models/Role';
+import Member from 'models/Member';
 
 const Wrapper = styled.div`
   background: #fff;
@@ -15,6 +17,8 @@ export interface HierarchyData {
   value: number;
   children: HierarchyData[];
   isLabel: boolean;
+  isCircle: boolean;
+  members: Member[];
 }
 
 const circleToChartData = (circle: Circle): HierarchyData => {
@@ -24,7 +28,30 @@ const circleToChartData = (circle: Circle): HierarchyData => {
     isLabel: false,
     children: circle.circles
       .map(circleToChartData)
-      .concat([{ name: circle.name, value: 2, isLabel: true, children: [] }]),
+      .concat(circle.roles.map(roleToChartData))
+      .concat([
+        {
+          name: circle.name,
+          value: Math.max(circle.scale() / 4, 2),
+          isLabel: true,
+          children: [],
+          isCircle: false,
+          members: [],
+        },
+      ]),
+    isCircle: true,
+    members: [],
+  };
+};
+
+const roleToChartData = (role: Role): HierarchyData => {
+  return {
+    name: role.name,
+    value: 1,
+    isLabel: false,
+    children: [],
+    isCircle: false,
+    members: role.members,
   };
 };
 
