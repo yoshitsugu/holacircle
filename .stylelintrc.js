@@ -6,5 +6,6 @@ module.exports = {
     indentation: 2,
     'string-quotes': 'single',
     'order/properties-alphabetical-order': true,
+    'declaration-empty-line-before': 'never',
   },
 };

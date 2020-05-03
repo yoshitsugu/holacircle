@@ -1,102 +1,80 @@
-import { createSlice } from "@reduxjs/toolkit";
-import Circle from "models/Circle";
+import { createSlice } from '@reduxjs/toolkit';
+import Circle from 'models/Circle';
 
 type State = {
-  rootCircle: Circle
-}
+  rootCircle: Circle;
+};
 
 const rakuen = new Circle({
-  name: '楽園'
-})
+  name: '楽園',
+});
 
 const hogekanri = new Circle({
-  name: '株式会社XXX ほげほげ管理基盤'
-})
+  name: '株式会社XXX ほげほげ管理基盤',
+});
 
 const launchUpDiv = new Circle({
   name: 'LaunchUp Div',
-  circles: [
-    rakuen,
-    hogekanri
-  ]
-})
+  circles: [rakuen],
+});
 
 const ojisan = new Circle({
   name: 'おじさんファンクラブ',
-  circles: [
-  ]
-})
+  circles: [],
+});
 
 const communityDiv = new Circle({
   name: 'Community Div',
-  circles: [
-    ojisan
-  ]
-})
-
+  circles: [ojisan],
+});
 
 const sengoku = new Circle({
   name: '戦国 Subdiv',
-  circles: []
-})
+  circles: [],
+});
 
 const seed = new Circle({
   name: 'seed subdiv',
-  circles: []
-})
+  circles: [],
+});
 
 const txdiv = new Circle({
   name: 'TX Div',
-  circles: [
-    sengoku,
-    seed,
-  ]
-})
+  circles: [sengoku, seed],
+});
 
 const pm = new Circle({
   name: 'プロジェクトマネジメント',
-  circles: [
-    txdiv,
-    launchUpDiv,
-    communityDiv,
-  ]
-
+  circles: [txdiv, launchUpDiv, communityDiv],
 });
 
 const onlineevent = new Circle({
   name: 'オンラインイベント',
-  circles: []
-})
+  circles: [],
+});
 
 const comunittymarketing = new Circle({
   name: 'コミュニティーマーケティング',
-  circles: []
-})
+  circles: [],
+});
 
 const kikaku = new Circle({
   name: '企画',
-  circles: [
-    onlineevent,
-    comunittymarketing,
-  ]
+  circles: [onlineevent, comunittymarketing],
 });
 
 const initialState: State = {
   rootCircle: new Circle({
     name: 'sikmi',
     roles: [],
-    circles: [
-      pm,
-      kikaku,
-    ]
-  })
-}
+    circles: [pm, kikaku],
+  }),
+};
 
 const circleModule = createSlice({
   name: 'circles',
   initialState,
-  reducers: {
-  }
-})
+  reducers: {},
+});
 
-export default circleModule
+export default circleModule;
