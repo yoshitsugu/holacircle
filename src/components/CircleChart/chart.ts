@@ -1,6 +1,8 @@
 import * as d3 from 'd3';
 import { HierarchyData } from './index';
 import { HierarchyCircularNode } from 'd3';
+import tippy from 'tippy.js';
+import 'tippy.js/dist/tippy.css';
 
 // https://observablehq.com/@d3/zoomable-circle-packing
 
@@ -51,7 +53,8 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .selectAll('circle')
     .data(root.descendants())
     .join('circle')
-    .attr('title', (d) => (d.data.isLabel ? d.data.name : ''))
+    .attr('title', (d) => (!d.data.isLabel || !d.data.isCircle ? d.data.name : ''))
+    .attr('data-tippy-content', (d) => (!d.data.isLabel || !d.data.isCircle ? d.data.name : ''))
     .attr('fill', (d) => nodeFill(d))
     .on('mouseover', function () {
       d3.select(this).attr('stroke', '#999');
@@ -71,10 +74,6 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     .join('foreignObject')
     .attr('pointer-events', 'none')
     .filter((d) => d.data.isLabel || !d.data.isCircle)
-    .attr('x', 0)
-    .attr('y', 0)
-    .attr('height', '200')
-    .attr('width', '200')
     .attr('class', 'circle-name')
     .style('opacity', (d) => (d === root || d.parent === root || d.parent?.parent === root ? 1 : 0));
 
@@ -117,6 +116,8 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
       return d.parent?.parent === focus || d.parent == focus || d === focus ? 1 : 0;
     });
   }
+
+  tippy('[data-tippy-content]');
 
   return svg.node();
 };
