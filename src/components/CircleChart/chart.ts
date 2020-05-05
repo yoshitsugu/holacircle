@@ -121,7 +121,9 @@ export default (container: SVGElement, data: HierarchyData, width: number, heigh
     });
   }
 
-  tippy('[data-tippy-content]');
+  tippy('[data-tippy-content]', {
+    trigger: 'mouseenter',
+  });
 
   return svg.node();
 };
