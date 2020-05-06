@@ -1,10 +1,10 @@
+import React, { FC, useRef } from 'react';
 import styled from 'styled-components';
 
-import React, { FC, useEffect, useRef } from 'react';
 import Circle from 'models/Circle';
-import chart from './chart';
 import Role from 'models/Role';
-import Member from 'models/Member';
+import CircleViewData from 'models/CircleViewData';
+import useZoomableChart from 'hooks/useZoomableChart';
 
 const Wrapper = styled.div`
   background: #fff;
@@ -16,16 +16,7 @@ const Wrapper = styled.div`
   }
 `;
 
-export interface HierarchyData {
-  name: string;
-  value: number;
-  children: HierarchyData[];
-  isLabel: boolean;
-  isCircle: boolean;
-  members: Member[];
-}
-
-const circleToChartData = (circle: Circle): HierarchyData => {
+const circleToChartData = (circle: Circle): CircleViewData => {
   return {
     name: circle.name,
     value: circle.scale(),
@@ -48,7 +39,7 @@ const circleToChartData = (circle: Circle): HierarchyData => {
   };
 };
 
-const roleToChartData = (role: Role): HierarchyData => {
+const roleToChartData = (role: Role): CircleViewData => {
   return {
     name: role.name,
     value: 1,
@@ -65,12 +56,7 @@ interface CircleChartProps {
 
 const CircleChart: FC<CircleChartProps> = ({ rootCircle }) => {
   const d3Container = useRef<SVGSVGElement | null>(null);
-
-  useEffect(() => {
-    if (d3Container.current) {
-      chart(d3Container.current, circleToChartData(rootCircle), 2000, 2000);
-    }
-  });
+  useZoomableChart(d3Container, circleToChartData(rootCircle), 2000, 2000);
 
   return (
     <Wrapper>
