@@ -1,10 +1,12 @@
-import { useState, useEffect, MutableRefObject } from 'react';
+import { useEffect, MutableRefObject, useRef } from 'react';
 import * as d3 from 'd3';
 import { HierarchyCircularNode } from 'd3';
 
 import CircleViewData from '../models/CircleViewData';
 import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
+import { useDispatch } from 'react-redux';
+import { setFocus } from 'redux/modules/focusModule';
 
 const pack = (data: CircleViewData, width: number, height: number): HierarchyCircularNode<CircleViewData> =>
   d3.pack<CircleViewData>().size([width, height])(
@@ -40,20 +42,20 @@ const fontSize = (d: HierarchyCircularNode<CircleViewData>, k: number): number =
   return Math.max(10, 10 + (2 * (d.r * k)) / (4 + 4 * d.depth));
 };
 
-function useZoomableChart(
-  ref: MutableRefObject<SVGSVGElement | null>,
-  data: CircleViewData,
-  width: number,
-  height: number,
-) {
+function useZoomableChart(data: CircleViewData, width: number, height: number) {
   let view: ZoomView;
   const root = pack(data, width, height);
   let focus = root;
+  const dispatch = useDispatch();
+  const d3Container = useRef<SVGSVGElement | null>(null);
+  let svg: d3.Selection<SVGSVGElement, unknown, null, unknown>;
+  let node: d3.Selection<SVGCircleElement, HierarchyCircularNode<CircleViewData>, SVGElement, unknown>;
+  let fo: d3.Selection<SVGForeignObjectElement, HierarchyCircularNode<CircleViewData>, SVGGElement, unknown>;
 
   useEffect(() => {
-    if (ref.current) {
-      const svg = d3
-        .select(ref.current)
+    if (d3Container.current) {
+      svg = d3
+        .select(d3Container.current)
         .attr('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`)
         .style('display', 'block')
         .style('margin', '0 -14px')
@@ -61,7 +63,7 @@ function useZoomableChart(
         .style('cursor', 'pointer')
         .on('click', () => zoom(root));
 
-      const node = svg
+      node = svg
         .append('g')
         .selectAll<SVGCircleElement, CircleViewData>('circle')
         .data(root.descendants())
@@ -80,7 +82,7 @@ function useZoomableChart(
         })
         .on('click', (d) => focus !== d && (zoom(d), d3.event.stopPropagation()));
 
-      const fo = svg
+      fo = svg
         .append('g')
         .selectAll<SVGForeignObjectElement, CircleViewData>('foreignObject')
         .data(root.descendants())
@@ -115,6 +117,10 @@ function useZoomableChart(
 
       const zoom = (d: HierarchyCircularNode<CircleViewData>) => {
         focus = d;
+        dispatch(setFocus(d.data.id));
+        if (!d.data.isCircle) {
+          return;
+        }
         svg
           .transition()
           .duration(d3.event.altKey ? 7500 : 750)
@@ -135,7 +141,9 @@ function useZoomableChart(
 
       tippy('[data-tippy-content]');
     }
-  });
+  }, [d3Container]);
+
+  return d3Container;
 }
 
 export default useZoomableChart;

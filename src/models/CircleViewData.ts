@@ -1,6 +1,7 @@
 import Member from './Member';
 
 type CircleViewData = {
+  id: number;
   name: string;
   value: number;
   children: CircleViewData[];

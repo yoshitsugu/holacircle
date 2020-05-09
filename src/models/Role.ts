@@ -1,8 +1,12 @@
 import Member from './Member';
 
-interface Role {
+type Role = {
+  id: number;
   name: string;
   members: Member[];
-}
+  purpose: string;
+  domains: string;
+  accountabilities: string;
+};
 
 export default Role;
