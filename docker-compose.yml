@@ -1,0 +1,39 @@
+version: '3.8'
+
+services:
+  backend:
+    build: ./backend
+    working_dir: /usr/src/app
+    environment:
+      DATABASE_URL: mysql://root@db/holacircle
+    ports:
+      - 5001:8000
+    depends_on:
+      - db
+    volumes:
+      - ./backend:/usr/src/app:cached
+      - rust_target:/usr/src/app/target
+    command: cargo watch -x run
+  frontend:
+    build: ./frontend
+    working_dir: /usr/src/app
+    volumes:
+      - ./frontend:/usr/src/app:cached
+    ports:
+      - 5000:3000
+    depends_on:
+      - backend
+    command: sh ./start_development.sh
+  db:
+    image: mysql:5.7
+    environment:
+      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
+    ports:
+      - 5306:3306
+    volumes:
+      - db_data:/var/lib/mysql
+
+volumes:
+  rust_target:
+  global_cargo:
+  db_data:

@@ -1,0 +1,11 @@
+[package]
+name = "holacircle"
+version = "0.1.0"
+authors = ["yoshitsugu <yoshitsugu@users.noreply.github.com>"]
+edition = "2018"
+
+[dependencies]
+actix-web = "2.0.0"
+actix-rt = "1.1.1"
+diesel = { version = "1.4.4", features = ["mysql"] }
+juniper = "0.14.2"
