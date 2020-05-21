@@ -1,6 +1,6 @@
 CREATE TABLE `roles` (
-  `id` bigint(20) NOT NULL AUTO_INCREMENT,
-  `client_id` bigint(20) NOT NULL,
+  `id` int(11) NOT NULL AUTO_INCREMENT,
+  `client_id` int(11) NOT NULL,
   `name` varchar(255) NOT NULL,
   `is_circle` tinyint(1) NOT NULL DEFAULT '0',
   `purpose` text NOT NULL,
