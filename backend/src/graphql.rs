@@ -52,7 +52,7 @@ impl MutationFields for Mutation {
 
         diesel::insert_into(clients::table)
             .values(&new_client)
-            .execute(&executor.context().db_con)ga
+            .execute(&executor.context().db_con)
             .and_then(|_| 
                  clients::table
                 .order(clients::id.desc())
