@@ -10,10 +10,22 @@ type Query {
 type Mutation {
   createClient(
     name: String!,
+    roles: [String!]!
   ): Client! @juniper(ownership: "owned")
 }
 
 type Client {
   id: ID! @juniper(ownership: "owned")
   name: String!
+  roles: [Role!]! @juniper(ownership: "owned")
+}
+
+type Role {
+  id: ID! @juniper(ownership: "owned")
+  clientId: ID! @juniper(ownership: "owned")
+  name: String!
+  isCircle: Boolean!
+  purpose: String!
+  domains: String!
+  accountabilities: String!
 }
