@@ -4,4 +4,3 @@ yarn install
 
 set -eu
 yarn start
-

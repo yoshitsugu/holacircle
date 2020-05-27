@@ -1,5 +1,5 @@
 interface Member {
-  name: string
+  name: string;
 }
 
-export default Member
+export default Member;

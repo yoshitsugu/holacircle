@@ -12,10 +12,10 @@ type Circle = {
   accountabilities: string;
 };
 
-let Circle = {
+const Circle = {
   scale(circle: Circle): number {
-    const subScales =
-      circle.circles.reduce((acc, circle) => acc + this.scale(circle), 0) + circle.roles.reduce((acc) => acc + 1, 0);
+    const subScales = circle.circles.reduce((acc, c) => acc + this.scale(c), 0) + circle.roles.reduce((a) => a + 1, 0);
+
     return subScales + circle.circles.length + 1;
   },
 };

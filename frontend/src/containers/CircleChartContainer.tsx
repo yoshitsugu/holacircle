@@ -1,7 +1,8 @@
 import React, { FC } from 'react';
 import styled from 'styled-components';
-import { RootState } from 'redux/rootReducer';
 import { useSelector } from 'react-redux';
+
+import { RootState } from 'redux/rootReducer';
 import CircleChart from 'components/CircleChart';
 import CircleInfo from 'components/CircleInfo';
 import Circle from 'models/Circle';

@@ -1,0 +1,23 @@
+schema:
+  # GraphQL APIサーバーのエンドポイント
+  - http://backend:8000/graphql
+documents: query.graphql
+generates:
+  # generatorで作成したいファイル名
+  ./src/generated/graphql.ts:
+    plugins:
+      - typescript
+      - typescript-operations
+      - typescript-react-apollo
+    config:
+      # hooksを生成するための設定
+      withHOC: false
+      withComponent: false
+      withHooks: true
+      # gqlgenのcustom scalarをstringとして扱う
+      scalars:
+        Time: string
+    hooks:
+      # ファイルが生成されたあとに、eslintのauto-fixを自動で走らせる
+      afterOneFileWrite:
+        - yarn run eslint --fix --ext .ts,.js --ignore-path .gitignore

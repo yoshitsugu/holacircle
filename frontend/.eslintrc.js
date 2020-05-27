@@ -39,7 +39,6 @@ module.exports = {
   root: true,
   rules: {
     // eslint official
-    'newline-before-return': 'error',
     'no-console': 'warn',
     'no-continue': 'off',
     'require-yield': 'error',

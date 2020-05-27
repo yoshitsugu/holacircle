@@ -1,4 +1,4 @@
-import { createSlice, createAction, createReducer } from '@reduxjs/toolkit';
+import { createSlice, createAction } from '@reduxjs/toolkit';
 
 type FocusState = {
   focus: number | null;

@@ -24,6 +24,8 @@ services:
     depends_on:
       - backend
     command: sh ./start_development.sh
+    tty: true
+    stdin_open: true
   db:
     image: mysql:5.7
     environment:

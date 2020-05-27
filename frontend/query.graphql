@@ -1,0 +1,10 @@
+query getClients {
+  clients {
+    id
+    name
+    roles {
+      id
+      name
+    }
+  }
+}
