@@ -3,7 +3,6 @@ use std::sync::Arc;
 
 use actix_web::{web, Error, HttpResponse};
 
-use juniper::http::playground::playground_source;
 use juniper::{http::GraphQLRequest, Executor, FieldResult, graphiql::graphiql_source};
 use juniper_from_schema::graphql_schema_from_file;
 
@@ -24,17 +23,17 @@ pub struct Query;
 pub struct Mutation;
 
 impl QueryFields for Query {
-    fn field_clients(
+    fn field_role(
         &self,
         executor: &Executor<'_, Context>,
-        _trail: &QueryTrail<'_, Client, Walked>,
-    ) -> FieldResult<Vec<Client>> {
-        use crate::schema::clients;
-
-        clients::table
-            .load::<crate::models::Client>(&executor.context().db_con)
-            .and_then(|clients| Ok(clients.into_iter().map_into().collect()))
-            .map_err(Into::into)
+        _trail: &QueryTrail<'_, Role, Walked>,
+    ) -> FieldResult<Role> {
+        use crate::schema::roles;
+        
+        roles::table.filter(roles::client_id.eq(1).and(roles::role_id.is_null()))
+            .first::<crate::models::Role>(&executor.context().db_con)
+            .map(Into::into)
+            .map_err(|e| format!("QueryFields: {:?}", e).into() )
     }
 }
 
@@ -87,7 +86,6 @@ pub struct Client {
 
 pub struct Role {
     id: i32,
-    client_id: i32,
     name: String,
     is_circle: bool,
     purpose: String,
@@ -130,10 +128,6 @@ impl RoleFields for Role {
         Ok(juniper::ID::new(self.id.to_string()))
     }
 
-    fn field_client_id(&self, _: &Executor<'_, Context>) -> FieldResult<juniper::ID> {
-        Ok(juniper::ID::new(self.client_id.to_string()))
-    }
-
     fn field_name(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
         Ok(&self.name)
     }
@@ -153,13 +147,22 @@ impl RoleFields for Role {
     fn field_accountabilities(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
         Ok(&self.accountabilities)
     }
+
+    fn field_roles(&self,  executor: &Executor<'_, Context>,
+           _trail: &QueryTrail<'_, Role, Walked>,) -> FieldResult<Vec<Role>> {
+               use crate::schema::roles;
+               roles::table
+               .filter(roles::role_id.eq(&self.id))
+               .load::<crate::models::Role>(&executor.context().db_con)
+               .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
+               .map_err(|e| format!("roles!! {:?}", e).into())
+           }
 }
 
 impl From<crate::models::Role> for Role {
     fn from(role: crate::models::Role) -> Self {
         Self {
             id: role.id,
-            client_id: role.client_id,
             name: role.name,
             is_circle: role.is_circle,
             purpose: role.purpose,
@@ -168,14 +171,6 @@ impl From<crate::models::Role> for Role {
         }
     }
 }
-
-fn playground() -> HttpResponse {
-    let html = playground_source("");
-    HttpResponse::Ok()
-        .content_type("text/html; charset=utf-8")
-        .body(html)
-}
-
 
 async fn graphiql() -> HttpResponse {
     let html = graphiql_source("/graphql");
@@ -210,10 +205,6 @@ pub fn register(config: &mut web::ServiceConfig) {
 
     config
         .data(schema)
-        .service(
-            web::resource("/graphql")
-              .route(web::post().to(graphql))
-              .route(web::get().to(playground))
-        )
+        .service(web::resource("/graphql").route(web::post().to(graphql)))
         .service(web::resource("/graphiql").route(web::get().to(graphiql)));
 }

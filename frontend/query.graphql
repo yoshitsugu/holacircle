@@ -1,10 +1,29 @@
-query getClients {
-  clients {
-    id
-    name
+query getRoles {
+  role {
+    ...roleFields
     roles {
-      id
-      name
+      ...roleFields
+      roles {
+        ...roleFields
+        roles {
+          ...roleFields
+          roles {
+            ...roleFields
+            roles {
+              ...roleFields
+            }
+          }
+        }
+      }
     }
   }
+}
+
+fragment roleFields on Role {
+  id
+  name
+  isCircle
+  purpose
+  domains
+  accountabilities
 }

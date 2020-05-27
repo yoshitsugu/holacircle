@@ -6,12 +6,14 @@ services:
     working_dir: /usr/src/app
     environment:
       DATABASE_URL: mysql://root@db/holacircle
+      RUST_BACKTRACE: 1
     ports:
       - 5001:8000
     depends_on:
       - db
     volumes:
       - ./backend:/usr/src/app:cached
+      - rust_cargo:/usr/local/cargo/registry
       - rust_target:/usr/src/app/target
     command: cargo watch -x run
   frontend:
@@ -37,5 +39,5 @@ services:
 
 volumes:
   rust_target:
-  global_cargo:
+  rust_cargo:
   db_data:

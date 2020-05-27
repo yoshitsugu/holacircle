@@ -4,7 +4,7 @@ schema {
 }
 
 type Query {
-  clients: [Client!]! @juniper(ownership: "owned")
+  role: Role! @juniper(ownership: "owned")
 }
 
 type Mutation {
@@ -22,10 +22,10 @@ type Client {
 
 type Role {
   id: ID! @juniper(ownership: "owned")
-  clientId: ID! @juniper(ownership: "owned")
   name: String!
   isCircle: Boolean!
   purpose: String!
   domains: String!
   accountabilities: String!
+  roles: [Role!]! @juniper(ownership: "owned")
 }

@@ -13,10 +13,11 @@ pub struct NewClient {
     pub name: String,
 }
 
-#[derive(Queryable)]
+#[derive(Queryable, Associations)]
 pub struct Role {
     pub id: i32,
     pub client_id: i32,
+    pub role_id: Option<i32>,
     pub name: String,
     pub is_circle: bool,
     pub purpose: String,

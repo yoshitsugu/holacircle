@@ -9,6 +9,7 @@ table! {
     roles (id) {
         id -> Integer,
         client_id -> Integer,
+        role_id -> Nullable<Integer>,
         name -> Varchar,
         is_circle -> Bool,
         purpose -> Text,

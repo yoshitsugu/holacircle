@@ -34,8 +34,7 @@ async fn main() -> std::io::Result<()> {
             .configure(graphql::register)
             .default_service(web::route().to(HttpResponse::NotFound))
     })
-    .bind(addr)
-    .unwrap()
+    .bind(addr)?
     .run()
     .await
 }
@@ -44,7 +43,7 @@ fn create_db_pool() -> DbPool {
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     r2d2::Pool::builder()
-        .max_size(3)
+        .max_size(10)
         .build(ConnectionManager::<MysqlConnection>::new(database_url))
         .expect("failed to create db connection pool")
 }

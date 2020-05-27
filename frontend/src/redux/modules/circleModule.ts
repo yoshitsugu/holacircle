@@ -1,7 +1,8 @@
-import { createSlice } from '@reduxjs/toolkit';
+import { createSlice, createAction } from '@reduxjs/toolkit';
 import Circle from 'models/Circle';
 import Role from 'models/Role';
 import Member from 'models/Member';
+import { Role as GraphqlRole } from '../../generated/graphql';
 
 type State = {
   rootCircle: Circle;
@@ -283,10 +284,47 @@ const initialState: State = {
   rootCircle,
 };
 
+export const SET_CIRCLE = 'setCircleFromGraphql';
+export const setCircleFromGraphql = createAction<GraphqlRole>(SET_CIRCLE);
+export type CircleAction = typeof SET_CIRCLE;
+
+const toRole = (c: GraphqlRole): Role => {
+  return {
+    id: Number(c.id),
+    name: c.name,
+    members: [],
+    purpose: c.purpose,
+    domains: c.domains,
+    accountabilities: c.accountabilities,
+  };
+};
+
+const toCircle = (c: GraphqlRole): Circle => {
+  return {
+    id: Number(c.id),
+    name: c.name,
+    members: [],
+    roles: c.roles.filter((r) => !r.isCircle).map((r) => toRole(r)),
+    circles: c.roles.filter((r) => r.isCircle).map((r) => toCircle(r)),
+    purpose: c.purpose,
+    domains: c.domains,
+    accountabilities: c.accountabilities,
+  };
+};
+
 const circleModule = createSlice({
   name: 'circles',
   initialState,
   reducers: {},
+  extraReducers: (builder) => {
+    builder.addCase(setCircleFromGraphql, (_state, action) => {
+      let circle: Circle = rootCircle;
+      if (action.payload.isCircle) {
+        circle = toCircle(action.payload);
+      }
+      return { rootCircle: circle };
+    });
+  },
 });
 
 export default circleModule;
