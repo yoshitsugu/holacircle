@@ -6,8 +6,6 @@ import tippy from 'tippy.js';
 import 'tippy.js/dist/tippy.css';
 import { useDispatch } from 'react-redux';
 import { setFocus } from 'redux/modules/focusModule';
-import { useGetRolesQuery } from 'generated/graphql';
-import { setCircleFromGraphql } from 'redux/modules/circleModule';
 import CircleViewData from '../models/CircleViewData';
 
 const pack = (data: CircleViewData, width: number, height: number): HierarchyCircularNode<CircleViewData> =>
@@ -108,17 +106,8 @@ function useZoomableChart(data: CircleViewData, width: number, height: number) {
     }
   };
 
-  const queryResult = useGetRolesQuery({
-    variables: {},
-    fetchPolicy: 'cache-and-network',
-  });
-
   useEffect(() => {
     if (d3Container.current && !svg.current) {
-      const roleGraphql = queryResult.data?.role;
-      if (roleGraphql) {
-        dispatch(setCircleFromGraphql(roleGraphql));
-      }
       svg.current = d3
         .select(d3Container.current)
         .attr('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`)

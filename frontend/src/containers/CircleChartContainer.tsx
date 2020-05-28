@@ -7,6 +7,7 @@ import CircleChart from 'components/CircleChart';
 import CircleInfo from 'components/CircleInfo';
 import Circle from 'models/Circle';
 import Role from 'models/Role';
+import { useGetRolesQuery } from 'generated/graphql';
 
 const Wrapper = styled.div`
   display: flex;
@@ -31,8 +32,8 @@ const NoDetail = styled.div`
   padding: 40px;
 `;
 
-const focusCircle = (circle: Circle, focus: number | null): Circle | Role | null => {
-  if (focus === null) {
+const focusCircle = (circle: Circle | null, focus: number | null): Circle | Role | null => {
+  if (circle === null || focus === null) {
     return null;
   }
 
@@ -64,8 +65,16 @@ const focusCircle = (circle: Circle, focus: number | null): Circle | Role | null
 };
 
 const CircleChartContainer: FC<{}> = () => {
-  const { rootCircle } = useSelector((state: RootState) => state.circle);
+  const queryResult = useGetRolesQuery({
+    variables: {},
+    fetchPolicy: 'cache-and-network',
+  });
+  // const { rootCircle } = useSelector((state: RootState) => state.circle);
+  const rootCircle = queryResult.data ? Circle.from(queryResult.data.role) : null;
   const { focus } = useSelector((state: RootState) => state.focus);
+  if (!rootCircle) {
+    return <Wrapper />;
+  }
   const circle = focusCircle(rootCircle, focus);
 
   if (!circle) {
