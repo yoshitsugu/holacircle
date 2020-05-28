@@ -8,10 +8,13 @@ type Query {
 }
 
 type Mutation {
-  createClient(
-    name: String!,
-    roles: [String!]!
-  ): Client! @juniper(ownership: "owned")
+  updateRole(
+    id: Int!
+    name: String!
+    purpose: String!
+    domains: String!
+    accountabilities: String!
+  ): Role! @juniper(ownership: "owned")
 }
 
 type Client {

@@ -3,7 +3,8 @@ use std::sync::Arc;
 
 use actix_web::{web, Error, HttpResponse};
 
-use juniper::{http::GraphQLRequest, Executor, FieldResult, graphiql::graphiql_source};
+use juniper::http::playground::playground_source;
+use juniper::{http::GraphQLRequest, Executor, FieldResult};
 use juniper_from_schema::graphql_schema_from_file;
 
 use diesel::prelude::*;
@@ -38,42 +39,33 @@ impl QueryFields for Query {
 }
 
 impl MutationFields for Mutation {
-    fn field_create_client(
+    fn field_update_role(
         &self,
         executor: &Executor<'_, Context>,
-        _trail: &QueryTrail<'_, Client, Walked>,
+        _trail: &QueryTrail<'_, Role, Walked>,
+        id: i32,
         name: String,
-        roles: Vec<String>,
-    ) -> FieldResult<Client> {
-        use crate::schema::{clients, roles};
+        purpose: String,
+        domains: String,
+        accountabilities: String,
+    ) -> FieldResult<Role> {
+        use crate::schema::roles;
 
-        let new_client = crate::models::NewClient { name: name };
-
-        diesel::insert_into(clients::table)
-            .values(&new_client)
+        diesel::update(roles::table)
+            .filter(roles::client_id.eq(1).and(roles::id.eq(id)))
+            .set((
+                roles::name.eq(name),
+                roles::purpose.eq(purpose),
+                roles::domains.eq(domains),
+                roles::accountabilities.eq(accountabilities),
+            ))
             .execute(&executor.context().db_con)
             .and_then(|_| 
-                 clients::table
-                .order(clients::id.desc())
-                .first::<crate::models::Client>(&executor.context().db_con)
-                .and_then(|client| {
-                    let values = roles
-                    .into_iter()
-                    .map(|role| (
-                        roles::client_id.eq(&client.id),
-                    roles::name.eq(role),
-                    roles::purpose.eq(""),
-                    roles::domains.eq(""),
-                    roles::accountabilities.eq("")))
-                    .collect_vec();
-    
-                    diesel::insert_into(roles::table)
-                    .values(&values)
-                    .execute(&executor.context().db_con)?;
-
-                    Ok(client.into())
-                })
-                .map_err(Into::into)
+                 roles::table
+                 .filter(roles::client_id.eq(1).and(roles::id.eq(id)))
+                 .first::<crate::models::Role>(&executor.context().db_con)
+                 .map(Into::into)
+                 .map_err(Into::into)
             )
             .map_err(Into::into)
     }
@@ -172,8 +164,9 @@ impl From<crate::models::Role> for Role {
     }
 }
 
-async fn graphiql() -> HttpResponse {
-    let html = graphiql_source("/graphql");
+
+fn playground() -> HttpResponse {
+    let html = playground_source("");
     HttpResponse::Ok()
         .content_type("text/html; charset=utf-8")
         .body(html)
@@ -205,6 +198,6 @@ pub fn register(config: &mut web::ServiceConfig) {
 
     config
         .data(schema)
-        .service(web::resource("/graphql").route(web::post().to(graphql)))
-        .service(web::resource("/graphiql").route(web::get().to(graphiql)));
+        .route("/graphql", web::post().to(graphql))
+        .route("/graphql", web::get().to(playground));
 }
