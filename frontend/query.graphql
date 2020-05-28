@@ -27,3 +27,9 @@ fragment roleFields on Role {
   domains
   accountabilities
 }
+
+mutation updateRole($id: ID!, $name: String!, $purpose: String!, $domains: String!, $accountabilities: String!) {
+  updateRole(id: $id, name: $name, purpose: $purpose, domains: $domains, accountabilities: $accountabilities) {
+    ...roleFields
+  }
+}

@@ -42,8 +42,8 @@ const fontSize = (d: HierarchyCircularNode<CircleViewData>, k: number): number =
 };
 
 function useZoomableChart(data: CircleViewData, width: number, height: number) {
-  const view = useRef<ZoomView>([1, 1, 1]);
   const root = pack(data, width, height);
+  const view = useRef<ZoomView>([root.x, root.y, root.r * 2]);
   const focus = useRef<d3.HierarchyCircularNode<CircleViewData>>(root);
   const dispatch = useDispatch();
   const d3Container = useRef<SVGSVGElement | null>(null);
@@ -160,6 +160,7 @@ function useZoomableChart(data: CircleViewData, width: number, height: number) {
 
       tippy('[data-tippy-content]');
     }
+
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [root, data, width, height]);
 

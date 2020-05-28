@@ -9,7 +9,7 @@ type Query {
 
 type Mutation {
   updateRole(
-    id: Int!
+    id: ID!
     name: String!
     purpose: String!
     domains: String!

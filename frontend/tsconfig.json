@@ -15,7 +15,10 @@
     "isolatedModules": true,
     "noEmit": true,
     "noImplicitReturns": true,
-    "jsx": "react"
+    "jsx": "react",
+    "paths": {
+      "toastify-js": ["../types/toastify-js.d.ts"]
+    }
   },
   "include": ["src"]
 }

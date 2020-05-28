@@ -43,16 +43,17 @@ impl MutationFields for Mutation {
         &self,
         executor: &Executor<'_, Context>,
         _trail: &QueryTrail<'_, Role, Walked>,
-        id: i32,
+        id: juniper::ID,
         name: String,
         purpose: String,
         domains: String,
         accountabilities: String,
     ) -> FieldResult<Role> {
         use crate::schema::roles;
+        let id_i32 = id.to_string().parse::<i32>().unwrap();
 
         diesel::update(roles::table)
-            .filter(roles::client_id.eq(1).and(roles::id.eq(id)))
+            .filter(roles::client_id.eq(1).and(roles::id.eq(id_i32)))
             .set((
                 roles::name.eq(name),
                 roles::purpose.eq(purpose),
@@ -62,7 +63,7 @@ impl MutationFields for Mutation {
             .execute(&executor.context().db_con)
             .and_then(|_| 
                  roles::table
-                 .filter(roles::client_id.eq(1).and(roles::id.eq(id)))
+                 .filter(roles::client_id.eq(1).and(roles::id.eq(id_i32)))
                  .first::<crate::models::Role>(&executor.context().db_con)
                  .map(Into::into)
                  .map_err(Into::into)

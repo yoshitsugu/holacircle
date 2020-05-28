@@ -1,6 +1,6 @@
 import React, { FC } from 'react';
 import styled from 'styled-components';
-import { useSelector } from 'react-redux';
+import { useSelector, useDispatch } from 'react-redux';
 
 import { RootState } from 'redux/rootReducer';
 import CircleChart from 'components/CircleChart';
@@ -8,6 +8,7 @@ import CircleInfo from 'components/CircleInfo';
 import Circle from 'models/Circle';
 import Role from 'models/Role';
 import { useGetRolesQuery } from 'generated/graphql';
+import { setFocus } from 'redux/modules/focusModule';
 
 const Wrapper = styled.div`
   display: flex;
@@ -69,11 +70,15 @@ const CircleChartContainer: FC<{}> = () => {
     variables: {},
     fetchPolicy: 'cache-and-network',
   });
+  const dispatch = useDispatch();
   // const { rootCircle } = useSelector((state: RootState) => state.circle);
   const rootCircle = queryResult.data ? Circle.from(queryResult.data.role) : null;
   const { focus } = useSelector((state: RootState) => state.focus);
   if (!rootCircle) {
     return <Wrapper />;
+  }
+  if (!focus) {
+    dispatch(setFocus(rootCircle.id));
   }
   const circle = focusCircle(rootCircle, focus);
 
