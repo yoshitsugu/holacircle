@@ -1,0 +1,7 @@
+{
+  "compilerOptions": {
+    "paths": {
+      "toastify-js": ["../types/toastify-js.d.ts"]
+    }
+  }
+}
