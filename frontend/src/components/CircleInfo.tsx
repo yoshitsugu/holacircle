@@ -14,7 +14,7 @@ const Wrapper = styled.div`
   flex-direction: column;
   font-size: 18px;
   justify-content: flex-start;
-  padding: 0 20px 0 40px;
+  padding: 0 40px;
 
   h1 {
     margin: 20px 0 40px 0;
@@ -57,7 +57,7 @@ const InfoForm = styled.div`
 `;
 
 const TitleForm = styled.div`
-  padding-top: 10px;
+  padding-top: 20px;
   > input {
     font-size: 1.5rem;
   }
@@ -107,6 +107,7 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
     setEditingPurpose(focus.purpose);
     setEditingDomains(focus.domains);
     setEditingAccountabilities(focus.accountabilities);
+    setEditMode(false);
   }, [focus]);
 
   const submit = (e: React.MouseEvent) => {
