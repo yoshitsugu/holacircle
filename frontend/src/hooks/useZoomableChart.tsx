@@ -99,15 +99,10 @@ function useZoomableChart(data: CircleViewData, width: number, height: number) {
           return () => zoomTo([root.x, root.y, root.r * 2]);
         });
     }
-    if (fo.current) {
-      fo.current.style('opacity', () => {
-        return d.parent?.parent === focus.current || d.parent === focus.current || d === focus.current ? 1 : 0;
-      });
-    }
   };
 
   useEffect(() => {
-    if (d3Container.current && !svg.current) {
+    if (d3Container.current) {
       svg.current = d3
         .select(d3Container.current)
         .attr('viewBox', `-${width / 2} -${height / 2} ${width} ${height}`)
@@ -117,8 +112,11 @@ function useZoomableChart(data: CircleViewData, width: number, height: number) {
         .style('cursor', 'pointer')
         .on('click', () => zoom(root));
 
-      node.current = svg.current
-        .append('g')
+      let n = svg.current.select<SVGGElement>('g.node');
+      if (n.empty()) {
+        n = svg.current.append('g').attr('class', 'node');
+      }
+      node.current = n
         .selectAll<SVGCircleElement, CircleViewData>('circle')
         .data(root.descendants())
         .join('circle')
@@ -136,18 +134,23 @@ function useZoomableChart(data: CircleViewData, width: number, height: number) {
         })
         .on('click', (d) => focus.current !== d && (zoom(d), d3.event.stopPropagation()));
 
-      fo.current = svg.current
-        .append('g')
+      let f = svg.current.select<SVGGElement>('g.fo');
+      if (f.empty()) {
+        f = svg.current.append('g').attr('class', 'fo');
+      }
+      fo.current = f
         .selectAll<SVGForeignObjectElement, CircleViewData>('foreignObject')
         .data(root.descendants())
         .join('foreignObject')
         .attr('pointer-events', 'none')
         .filter((d) => d.data.isLabel || !d.data.isCircle)
-        .attr('class', 'circle-name')
-        .style('opacity', (d) => (d === root || d.parent === root || d.parent?.parent === root ? 1 : 0));
+        .attr('class', 'circle-name');
 
-      fo.current
-        .append('xhtml:div')
+      let name = fo.current.select('html div');
+      if (name.empty()) {
+        name = fo.current.append('xhtml:div');
+      }
+      name
         .style('line-height', 1.2)
         .style('width', '100%')
         .style('height', '100%')
@@ -156,13 +159,12 @@ function useZoomableChart(data: CircleViewData, width: number, height: number) {
         .style('align-items', 'center')
         .html((d) => d.data.name);
 
-      zoomTo([root.x, root.y, root.r * 2]);
+      zoomTo([focus.current.x, focus.current.y, focus.current.r * 2]);
 
       tippy('[data-tippy-content]');
     }
-
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [root, data, width, height]);
+  }, [JSON.stringify(data)]);
 
   return d3Container;
 }
