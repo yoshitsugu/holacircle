@@ -1,6 +1,7 @@
 #[macro_use]
 extern crate diesel;
 
+use env_logger;
 use actix_cors::Cors;
 use actix_web::{web, App, HttpServer, HttpResponse};
 
@@ -19,6 +20,8 @@ pub type DbCon = r2d2::PooledConnection<ConnectionManager<MysqlConnection>>;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
+    env_logger::init();
+    
     let db_pool = create_db_pool();
     let port: u16 = std::env::var("PORT")
         .ok()
@@ -43,7 +46,7 @@ fn create_db_pool() -> DbPool {
     let database_url = std::env::var("DATABASE_URL").expect("DATABASE_URL must be set");
 
     r2d2::Pool::builder()
-        .max_size(10)
+        .max_size(3)
         .build(ConnectionManager::<MysqlConnection>::new(database_url))
         .expect("failed to create db connection pool")
 }
