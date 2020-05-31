@@ -30,11 +30,12 @@ impl QueryFields for Query {
         _trail: &QueryTrail<'_, Role, Walked>,
     ) -> FieldResult<Role> {
         use crate::schema::roles;
-        
-        roles::table.filter(roles::client_id.eq(1).and(roles::role_id.is_null()))
+
+        roles::table
+            .filter(roles::client_id.eq(1).and(roles::role_id.is_null()))
             .first::<crate::models::Role>(&executor.context().db_con)
             .map(Into::into)
-            .map_err(|e| format!("QueryFields: {:?}", e).into() )
+            .map_err(|e| format!("QueryFields: {:?}", e).into())
     }
 }
 
@@ -61,13 +62,46 @@ impl MutationFields for Mutation {
                 roles::accountabilities.eq(accountabilities),
             ))
             .execute(&executor.context().db_con)
-            .and_then(|_| 
-                 roles::table
-                 .filter(roles::client_id.eq(1).and(roles::id.eq(id_i32)))
-                 .first::<crate::models::Role>(&executor.context().db_con)
-                 .map(Into::into)
-                 .map_err(Into::into)
-            )
+            .and_then(|_| {
+                roles::table
+                    .filter(roles::client_id.eq(1).and(roles::id.eq(id_i32)))
+                    .first::<crate::models::Role>(&executor.context().db_con)
+                    .map(Into::into)
+                    .map_err(Into::into)
+            })
+            .map_err(Into::into)
+    }
+    fn field_new_role(
+        &self,
+        executor: &Executor<'_, Context>,
+        _trail: &QueryTrail<'_, Role, Walked>,
+        name: String,
+        purpose: String,
+        domains: String,
+        accountabilities: String,
+        role_id: juniper::ID,
+    ) -> FieldResult<Role> {
+        use crate::schema::roles;
+        let role_id_i32 = role_id.to_string().parse::<i32>().unwrap();
+
+        diesel::insert_into(roles::table)
+            .values((
+                roles::name.eq(name),
+                roles::purpose.eq(purpose),
+                roles::domains.eq(domains),
+                roles::accountabilities.eq(accountabilities),
+                roles::role_id.eq(role_id_i32),
+            ))
+            .execute(&executor.context().db_con)
+            .and_then(|_| {
+                // diesel && mysql でinsert_intoでINSERTしたレコードを取得する方法ある？？
+                // わからなかったので、一旦バグってるがidの降順で最新の１件を取得して返す
+                roles::table
+                    .order(roles::id.desc())
+                    .first::<crate::models::Role>(&executor.context().db_con)
+                    .map(Into::into)
+                    .map_err(Into::into)
+            })
             .map_err(Into::into)
     }
 }
@@ -95,15 +129,18 @@ impl ClientFields for Client {
         Ok(&self.name)
     }
 
-    fn field_roles(&self,  executor: &Executor<'_, Context>,
-           _trail: &QueryTrail<'_, Role, Walked>,) -> FieldResult<Vec<Role>> {
-               use crate::schema::roles;
-               roles::table
-               .filter(roles::client_id.eq(&self.id))
-               .load::<crate::models::Role>(&executor.context().db_con)
-               .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
-               .map_err(Into::into)
-           }
+    fn field_roles(
+        &self,
+        executor: &Executor<'_, Context>,
+        _trail: &QueryTrail<'_, Role, Walked>,
+    ) -> FieldResult<Vec<Role>> {
+        use crate::schema::roles;
+        roles::table
+            .filter(roles::client_id.eq(&self.id))
+            .load::<crate::models::Role>(&executor.context().db_con)
+            .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
+            .map_err(Into::into)
+    }
 }
 
 impl From<crate::models::Client> for Client {
@@ -114,7 +151,6 @@ impl From<crate::models::Client> for Client {
         }
     }
 }
-
 
 impl RoleFields for Role {
     fn field_id(&self, _: &Executor<'_, Context>) -> FieldResult<juniper::ID> {
@@ -141,15 +177,18 @@ impl RoleFields for Role {
         Ok(&self.accountabilities)
     }
 
-    fn field_roles(&self,  executor: &Executor<'_, Context>,
-           _trail: &QueryTrail<'_, Role, Walked>,) -> FieldResult<Vec<Role>> {
-               use crate::schema::roles;
-               roles::table
-               .filter(roles::role_id.eq(&self.id))
-               .load::<crate::models::Role>(&executor.context().db_con)
-               .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
-               .map_err(|e| format!("roles!! {:?}", e).into())
-           }
+    fn field_roles(
+        &self,
+        executor: &Executor<'_, Context>,
+        _trail: &QueryTrail<'_, Role, Walked>,
+    ) -> FieldResult<Vec<Role>> {
+        use crate::schema::roles;
+        roles::table
+            .filter(roles::role_id.eq(&self.id))
+            .load::<crate::models::Role>(&executor.context().db_con)
+            .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
+            .map_err(|e| format!("roles!! {:?}", e).into())
+    }
 }
 
 impl From<crate::models::Role> for Role {
@@ -164,7 +203,6 @@ impl From<crate::models::Role> for Role {
         }
     }
 }
-
 
 fn playground() -> HttpResponse {
     let html = playground_source("");
@@ -185,7 +223,8 @@ async fn graphql(
     web::block(move || {
         let res = data.execute(&schema, &ctx);
         Ok::<_, serde_json::error::Error>(serde_json::to_string(&res)?)
-    }).await
+    })
+    .await
     .map_err(Into::into)
     .and_then(|client| {
         Ok(HttpResponse::Ok()

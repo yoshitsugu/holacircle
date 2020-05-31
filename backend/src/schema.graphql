@@ -15,6 +15,14 @@ type Mutation {
     domains: String!
     accountabilities: String!
   ): Role! @juniper(ownership: "owned")
+
+  newRole(
+    name: String!
+    purpose: String!
+    domains: String!
+    accountabilities: String!
+    roleId: ID!
+  ): Role! @juniper(ownership: "owned")
 }
 
 type Client {
