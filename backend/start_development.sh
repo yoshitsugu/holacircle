@@ -3,5 +3,5 @@
 set -eu
 
 diesel setup
-diesel migration
+diesel migration run
 cargo watch -x run
