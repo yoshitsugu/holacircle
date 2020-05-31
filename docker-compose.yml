@@ -16,7 +16,7 @@ services:
       - ./backend:/usr/src/app:cached
       - rust_cargo:/usr/local/cargo/registry
       - rust_target:/usr/src/app/target
-    command: cargo watch -x run
+    command: sh ./start_development.sh
   frontend:
     build: ./frontend
     working_dir: /usr/src/app
