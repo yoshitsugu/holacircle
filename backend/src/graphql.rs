@@ -86,6 +86,7 @@ impl MutationFields for Mutation {
 
         diesel::insert_into(roles::table)
             .values((
+                roles::client_id.eq(1),
                 roles::name.eq(name),
                 roles::purpose.eq(purpose),
                 roles::domains.eq(domains),

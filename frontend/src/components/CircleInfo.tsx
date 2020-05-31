@@ -6,7 +6,7 @@ import Role from 'models/Role';
 import HcInput from 'components/forms/HcInput';
 import HcTextarea from 'components/forms/HcTextarea';
 import HcButton from 'components/parts/HcButton';
-import { useUpdateRoleMutation } from 'generated/graphql';
+import { useUpdateRoleMutation, useNewRoleMutation } from 'generated/graphql';
 import HcMessage from 'components/parts/HcMessage';
 
 const Wrapper = styled.div`
@@ -27,7 +27,12 @@ const PageTitle = styled.div`
   align-items: center;
 `;
 
+const ButtonContainer = styled.div`
+  display: flex-end;
+`;
+
 const EditButton = styled.div`
+  display: inline-block;
   cursor: pointer;
   width: 1.5rem;
   height: 1.5rem;
@@ -73,6 +78,7 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
   const [editingDomains, setEditingDomains] = useState<string>(focus.domains);
   const [editingAccountabilities, setEditingAccountabilities] = useState<string>(focus.accountabilities);
   const [editMode, setEditMode] = useState<boolean>(false);
+  const [isUpdate, setIsUpdate] = useState<boolean>(true);
 
   const mutationCompletedHandler = (): void => {
     setEditMode(false);
@@ -90,13 +96,25 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
     }).show();
   };
 
-  const [updateMutation, { loading }] = useUpdateRoleMutation({
+  const [updateRoleMutation, { loading: updateLoading }] = useUpdateRoleMutation({
     variables: {
       id: String(focus.id),
       name: editingName,
       purpose: editingPurpose,
       domains: editingDomains,
       accountabilities: editingAccountabilities,
+    },
+    onCompleted: mutationCompletedHandler,
+    onError: mutationErrorHandler,
+  });
+
+  const [newRoleMutation, { loading: newLoading }] = useNewRoleMutation({
+    variables: {
+      name: editingName,
+      purpose: editingPurpose,
+      domains: editingDomains,
+      accountabilities: editingAccountabilities,
+      roleId: String(focus.id),
     },
     onCompleted: mutationCompletedHandler,
     onError: mutationErrorHandler,
@@ -112,7 +130,11 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
 
   const submit = (e: React.MouseEvent) => {
     e.preventDefault();
-    updateMutation();
+    if (isUpdate) {
+      updateRoleMutation();
+    } else {
+      newRoleMutation();
+    }
   };
 
   return (
@@ -126,13 +148,32 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
           <h1>{focus.name}</h1>
         )}
         {editMode ? (
-          <HcButton onClick={submit} disabled={loading}>
+          <HcButton onClick={submit} disabled={isUpdate ? updateLoading : newLoading}>
             保存
           </HcButton>
         ) : (
-          <EditButton onClick={() => setEditMode(true)}>
-            <i className="material-icons">edit</i>
-          </EditButton>
+          <ButtonContainer>
+            <EditButton
+              onClick={() => {
+                setEditMode(true);
+                setIsUpdate(true);
+              }}
+            >
+              <i className="material-icons">edit</i>
+            </EditButton>
+            <EditButton
+              onClick={() => {
+                setEditMode(true);
+                setIsUpdate(false);
+                setEditingName('');
+                setEditingPurpose('');
+                setEditingDomains('');
+                setEditingAccountabilities('');
+              }}
+            >
+              <i className="material-icons">fiber_new</i>
+            </EditButton>
+          </ButtonContainer>
         )}
       </PageTitle>
       <InfoSection>

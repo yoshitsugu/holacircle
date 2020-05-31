@@ -31,6 +31,7 @@ export type Query = {
 export type Mutation = {
   __typename?: 'Mutation';
   updateRole: Role;
+  newRole: Role;
 };
 
 export type MutationUpdateRoleArgs = {
@@ -39,6 +40,14 @@ export type MutationUpdateRoleArgs = {
   purpose: Scalars['String'];
   domains: Scalars['String'];
   accountabilities: Scalars['String'];
+};
+
+export type MutationNewRoleArgs = {
+  name: Scalars['String'];
+  purpose: Scalars['String'];
+  domains: Scalars['String'];
+  accountabilities: Scalars['String'];
+  roleId: Scalars['ID'];
 };
 
 export type GetRolesQueryVariables = {};
@@ -81,6 +90,16 @@ export type UpdateRoleMutationVariables = {
 export type UpdateRoleMutation = { __typename?: 'Mutation' } & {
   updateRole: { __typename?: 'Role' } & RoleFieldsFragment;
 };
+
+export type NewRoleMutationVariables = {
+  name: Scalars['String'];
+  purpose: Scalars['String'];
+  domains: Scalars['String'];
+  accountabilities: Scalars['String'];
+  roleId: Scalars['ID'];
+};
+
+export type NewRoleMutation = { __typename?: 'Mutation' } & { newRole: { __typename?: 'Role' } & RoleFieldsFragment };
 
 export const RoleFieldsFragmentDoc = gql`
   fragment roleFields on Role {
@@ -180,3 +199,40 @@ export type UpdateRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<
   UpdateRoleMutation,
   UpdateRoleMutationVariables
 >;
+export const NewRoleDocument = gql`
+  mutation newRole($name: String!, $purpose: String!, $domains: String!, $accountabilities: String!, $roleId: ID!) {
+    newRole(name: $name, purpose: $purpose, domains: $domains, accountabilities: $accountabilities, roleId: $roleId) {
+      ...roleFields
+    }
+  }
+  ${RoleFieldsFragmentDoc}
+`;
+export type NewRoleMutationFn = ApolloReactCommon.MutationFunction<NewRoleMutation, NewRoleMutationVariables>;
+
+/**
+ * __useNewRoleMutation__
+ *
+ * To run a mutation, you first call `useNewRoleMutation` within a React component and pass it any options that fit your needs.
+ * When your component renders, `useNewRoleMutation` returns a tuple that includes:
+ * - A mutate function that you can call at any time to execute the mutation
+ * - An object with fields that represent the current status of the mutation's execution
+ *
+ * @param baseOptions options that will be passed into the mutation, supported options are listed on: https://www.apollographql.com/docs/react/api/react-hooks/#options-2;
+ *
+ * @example
+ * const [newRoleMutation, { data, loading, error }] = useNewRoleMutation({
+ *   variables: {
+ *      name: // value for 'name'
+ *      purpose: // value for 'purpose'
+ *      domains: // value for 'domains'
+ *      accountabilities: // value for 'accountabilities'
+ *      roleId: // value for 'roleId'
+ *   },
+ * });
+ */
+export const useNewRoleMutation = (
+  baseOptions?: ApolloReactHooks.MutationHookOptions<NewRoleMutation, NewRoleMutationVariables>,
+) => ApolloReactHooks.useMutation<NewRoleMutation, NewRoleMutationVariables>(NewRoleDocument, baseOptions);
+export type NewRoleMutationHookResult = ReturnType<typeof useNewRoleMutation>;
+export type NewRoleMutationResult = ApolloReactCommon.MutationResult<NewRoleMutation>;
+export type NewRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<NewRoleMutation, NewRoleMutationVariables>;
