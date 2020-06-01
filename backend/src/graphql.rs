@@ -6,12 +6,12 @@ use actix_web::{web, Error, HttpResponse};
 use juniper::http::playground::playground_source;
 use juniper::{http::GraphQLRequest, Executor, FieldResult};
 use juniper_from_schema::graphql_schema_from_file;
+use juniper_eager_loading::{prelude::*, LoadFrom, HasMany, LoadChildrenOutput};
 
 use diesel::prelude::*;
 
 use itertools::Itertools;
-
-use crate::{DbCon, DbPool};
+use crate::{models, DbCon, DbPool};
 
 graphql_schema_from_file!("src/schema.graphql");
 
@@ -27,14 +27,20 @@ impl QueryFields for Query {
     fn field_role(
         &self,
         executor: &Executor<'_, Context>,
-        _trail: &QueryTrail<'_, Role, Walked>,
+        trail: &QueryTrail<'_, Role, Walked>,
     ) -> FieldResult<Role> {
         use crate::schema::roles;
         
-        roles::table.filter(roles::client_id.eq(1).and(roles::role_id.is_null()))
-            .first::<crate::models::Role>(&executor.context().db_con)
-            .map(Into::into)
-            .map_err(|e| format!("QueryFields: {:?}", e).into() )
+        let model_role = roles::table.filter(roles::client_id.eq(1).and(roles::role_id.is_null()))
+            .first::<models::Role>(&executor.context().db_con)?;
+
+        let role = Role::new_from_model(&model_role);
+        Role::eager_load_all_children(
+            role,
+            &[model_role],
+            &executor.context(),
+            trail
+        ).map_err(Into::into)
     }
 }
 
@@ -42,7 +48,7 @@ impl MutationFields for Mutation {
     fn field_update_role(
         &self,
         executor: &Executor<'_, Context>,
-        _trail: &QueryTrail<'_, Role, Walked>,
+        trail: &QueryTrail<'_, Role, Walked>,
         id: juniper::ID,
         name: String,
         purpose: String,
@@ -61,110 +67,159 @@ impl MutationFields for Mutation {
                 roles::accountabilities.eq(accountabilities),
             ))
             .execute(&executor.context().db_con)
-            .and_then(|_| 
-                 roles::table
+            .and_then(|_| {
+                 let model_role = roles::table
                  .filter(roles::client_id.eq(1).and(roles::id.eq(id_i32)))
-                 .first::<crate::models::Role>(&executor.context().db_con)
-                 .map(Into::into)
-                 .map_err(Into::into)
+                 .first::<models::Role>(&executor.context().db_con)?;
+
+                 let role = Role::new_from_model(&model_role);
+                 Role::eager_load_all_children(
+                     role,
+                     &[model_role],
+                     &executor.context(),
+                     trail
+                 ).map_err(Into::into)
+                }
             )
             .map_err(Into::into)
     }
 }
 
-pub struct Client {
-    id: i32,
-    name: String,
-}
-
+#[derive(Debug, Clone, PartialEq)]
 pub struct Role {
-    id: i32,
-    name: String,
-    is_circle: bool,
-    purpose: String,
-    domains: String,
-    accountabilities: String,
+    role: models::Role,
+
+    roles: HasMany<Role>,
 }
 
-impl ClientFields for Client {
-    fn field_id(&self, _: &Executor<'_, Context>) -> FieldResult<juniper::ID> {
-        Ok(juniper::ID::new(self.id.to_string()))
-    }
+impl LoadFrom<models::Role> for models::Role {
+    type Error = diesel::result::Error;
+    type Context = Context;
 
-    fn field_name(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
-        Ok(&self.name)
-    }
+    fn load(
+        role_models: &[models::Role],
+        _field_args: &(),
+        context: &Self::Context,
+    ) -> Result<Vec<models::Role>, Self::Error> {
+        use crate::schema::roles;
 
-    fn field_roles(&self,  executor: &Executor<'_, Context>,
-           _trail: &QueryTrail<'_, Role, Walked>,) -> FieldResult<Vec<Role>> {
-               use crate::schema::roles;
-               roles::table
-               .filter(roles::client_id.eq(&self.id))
-               .load::<crate::models::Role>(&executor.context().db_con)
-               .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
-               .map_err(Into::into)
-           }
+        let role_ids = role_models
+            .iter()
+            .map(|role| role.id)
+            .collect_vec();
+
+        roles::table
+            .filter(roles::role_id.eq_any(role_ids))
+            .load::<models::Role>(&context.db_con)
+    }
 }
 
-impl From<crate::models::Client> for Client {
-    fn from(client: crate::models::Client) -> Self {
+impl GraphqlNodeForModel for Role {
+    type Model = models::Role;
+    type Id = i32;
+    type Context = Context;
+    type Error = diesel::result::Error;
+
+    fn new_from_model(model: &Self::Model) -> Self {
         Self {
-            id: client.id,
-            name: client.name,
+            role: model.clone(),
+            roles: Default::default(),
         }
     }
 }
 
+impl EagerLoadAllChildren for Role {
+    fn eager_load_all_children_for_each(
+        nodes: &mut [Self],
+        models: &[Self::Model],
+        ctx: &Self::Context,
+        trail: &QueryTrail<'_, Self, Walked>,
+    ) -> Result<(), Self::Error> {
+        if let Some(child_trail) = trail.roles().walk() {
+            let field_args = trail.roles_args();
+
+            EagerLoadChildrenOfType::<
+                Role,
+                EagerLoadingContextRoleForRoles,
+                _,
+            >::eager_load_children(nodes, models, ctx, &child_trail, &field_args)?;
+        }
+
+        Ok(())
+    }
+}
+#[allow(missing_docs, dead_code)]
+struct EagerLoadingContextRoleForRoles;
+
+impl<'a>
+    EagerLoadChildrenOfType<
+        'a,
+        Role,
+        EagerLoadingContextRoleForRoles,
+        ()
+    > for Role
+{
+    type FieldArguments = ();
+
+    fn load_children(
+        models: &[Self::Model],
+        field_args: &Self::FieldArguments,
+        ctx: &Self::Context,
+    ) -> Result<
+        LoadChildrenOutput<<Role as juniper_eager_loading::GraphqlNodeForModel>::Model>,
+        Self::Error,
+    > {
+        let child_models: Vec<models::Role> = LoadFrom::load(&models, field_args, ctx)?;
+        Ok(LoadChildrenOutput::ChildModels(child_models))
+    }
+
+    fn is_child_of(
+        node: &Self,
+        child: &Role,
+        _join_model: &(), _field_args: &Self::FieldArguments,
+        _ctx: &Self::Context,
+    ) -> bool {
+        Some(node.role.id) == child.role.role_id
+    }
+
+    fn association(node: &mut Self) -> &mut dyn Association<Role> {
+        &mut node.roles
+    }
+}
 
 impl RoleFields for Role {
     fn field_id(&self, _: &Executor<'_, Context>) -> FieldResult<juniper::ID> {
-        Ok(juniper::ID::new(self.id.to_string()))
+        Ok(juniper::ID::new(self.role.id.to_string()))
     }
 
     fn field_name(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
-        Ok(&self.name)
+        Ok(&self.role.name)
     }
 
     fn field_is_circle(&self, _: &Executor<'_, Context>) -> FieldResult<&bool> {
-        Ok(&self.is_circle)
+        Ok(&self.role.is_circle)
     }
 
     fn field_purpose(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
-        Ok(&self.purpose)
+        Ok(&self.role.purpose)
     }
 
     fn field_domains(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
-        Ok(&self.domains)
+        Ok(&self.role.domains)
     }
 
     fn field_accountabilities(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
-        Ok(&self.accountabilities)
+        Ok(&self.role.accountabilities)
     }
 
-    fn field_roles(&self,  executor: &Executor<'_, Context>,
-           _trail: &QueryTrail<'_, Role, Walked>,) -> FieldResult<Vec<Role>> {
-               use crate::schema::roles;
-               roles::table
-               .filter(roles::role_id.eq(&self.id))
-               .load::<crate::models::Role>(&executor.context().db_con)
-               .and_then(|tags| Ok(tags.into_iter().map_into().collect()))
-               .map_err(|e| format!("roles!! {:?}", e).into())
-           }
-}
-
-impl From<crate::models::Role> for Role {
-    fn from(role: crate::models::Role) -> Self {
-        Self {
-            id: role.id,
-            name: role.name,
-            is_circle: role.is_circle,
-            purpose: role.purpose,
-            domains: role.domains,
-            accountabilities: role.accountabilities,
-        }
+    fn field_roles(
+        &self, 
+        _executor: &Executor<'_, Context>,
+        _trail: &QueryTrail<'_, Role, Walked>,
+    ) -> FieldResult<&Vec<Role>> {
+        self.roles.try_unwrap().map_err(From::from)
     }
 }
-
 
 fn playground() -> HttpResponse {
     let html = playground_source("");
