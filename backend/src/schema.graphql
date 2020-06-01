@@ -25,12 +25,6 @@ type Mutation {
   ): Role! @juniper(ownership: "owned")
 }
 
-type Client {
-  id: ID! @juniper(ownership: "owned")
-  name: String!
-  roles: [Role!]! @juniper(ownership: "owned")
-}
-
 type Role {
   id: ID! @juniper(ownership: "owned")
   name: String!
@@ -38,5 +32,5 @@ type Role {
   purpose: String!
   domains: String!
   accountabilities: String!
-  roles: [Role!]! @juniper(ownership: "owned")
+  roles: [Role!]!
 }

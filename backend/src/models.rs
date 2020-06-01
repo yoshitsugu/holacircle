@@ -13,7 +13,7 @@ pub struct NewClient {
     pub name: String,
 }
 
-#[derive(Queryable, Associations)]
+#[derive(Queryable, Associations, Debug, Clone, PartialEq)]
 pub struct Role {
     pub id: i32,
     pub client_id: i32,
