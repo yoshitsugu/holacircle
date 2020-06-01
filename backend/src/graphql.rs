@@ -66,12 +66,8 @@ impl MutationFields for Mutation {
                 roles::domains.eq(domains),
                 roles::accountabilities.eq(accountabilities),
             ))
-            .execute(&executor.context().db_con)
-            .and_then(|_| {
-                 let model_role = roles::table
-                 .filter(roles::client_id.eq(1).and(roles::id.eq(id_i32)))
-                 .first::<models::Role>(&executor.context().db_con)?;
-
+            .get_result::<models::Role>(&executor.context().db_con)
+            .and_then(|model_role| {
                  let role = Role::new_from_model(&model_role);
                  Role::eager_load_all_children(
                      role,
@@ -107,13 +103,8 @@ impl MutationFields for Mutation {
                 roles::accountabilities.eq(accountabilities),
                 roles::role_id.eq(role_id_i32),
             ))
-            .execute(&executor.context().db_con)
-            .and_then(|_| {
-                // diesel && mysql でinsert_intoでINSERTしたレコードを取得する方法ある？？
-                // わからなかったので、一旦バグってるがidの降順で最新の１件を取得して返す
-                let model_role = roles::table
-                    .order(roles::id.desc())
-                    .first::<crate::models::Role>(&executor.context().db_con)?;
+            .get_result(&executor.context().db_con)
+            .and_then(|model_role| {
                 let role = Role::new_from_model(&model_role);
                 Role::eager_load_all_children(
                     role,
