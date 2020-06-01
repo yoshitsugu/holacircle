@@ -83,6 +83,47 @@ impl MutationFields for Mutation {
             )
             .map_err(Into::into)
     }
+
+
+    fn field_new_role(
+        &self,
+        executor: &Executor<'_, Context>,
+        trail: &QueryTrail<'_, Role, Walked>,
+        name: String,
+        purpose: String,
+        domains: String,
+        accountabilities: String,
+        role_id: juniper::ID,
+    ) -> FieldResult<Role> {
+        use crate::schema::roles;
+        let role_id_i32 = role_id.to_string().parse::<i32>().unwrap();
+
+        diesel::insert_into(roles::table)
+            .values((
+                roles::client_id.eq(1),
+                roles::name.eq(name),
+                roles::purpose.eq(purpose),
+                roles::domains.eq(domains),
+                roles::accountabilities.eq(accountabilities),
+                roles::role_id.eq(role_id_i32),
+            ))
+            .execute(&executor.context().db_con)
+            .and_then(|_| {
+                // diesel && mysql でinsert_intoでINSERTしたレコードを取得する方法ある？？
+                // わからなかったので、一旦バグってるがidの降順で最新の１件を取得して返す
+                let model_role = roles::table
+                    .order(roles::id.desc())
+                    .first::<crate::models::Role>(&executor.context().db_con)?;
+                let role = Role::new_from_model(&model_role);
+                Role::eager_load_all_children(
+                    role,
+                    &[model_role],
+                    &executor.context(),
+                    trail
+                ).map_err(Into::into)
+            })
+            .map_err(Into::into)
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -240,7 +281,8 @@ async fn graphql(
     web::block(move || {
         let res = data.execute(&schema, &ctx);
         Ok::<_, serde_json::error::Error>(serde_json::to_string(&res)?)
-    }).await
+    })
+    .await
     .map_err(Into::into)
     .and_then(|client| {
         Ok(HttpResponse::Ok()

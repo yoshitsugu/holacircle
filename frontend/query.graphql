@@ -33,3 +33,9 @@ mutation updateRole($id: ID!, $name: String!, $purpose: String!, $domains: Strin
     ...roleFields
   }
 }
+
+mutation newRole($name: String!, $purpose: String!, $domains: String!, $accountabilities: String!, $roleId: ID!) {
+  newRole(name: $name, purpose: $purpose, domains: $domains, accountabilities: $accountabilities, roleId: $roleId) {
+    ...roleFields
+  }
+}
