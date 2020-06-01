@@ -5,7 +5,7 @@ services:
     build: ./backend
     working_dir: /usr/src/app
     environment:
-      DATABASE_URL: mysql://root@db/holacircle
+      DATABASE_URL: postgres://postgres:pgpass@db/holacircle
       RUST_BACKTRACE: 1
       RUST_LOG: debug
     ports:
@@ -30,13 +30,13 @@ services:
     tty: true
     stdin_open: true
   db:
-    image: mysql:5.7
-    environment:
-      MYSQL_ALLOW_EMPTY_PASSWORD: 'yes'
-    ports:
-      - 5306:3306
+    image: postgres
     volumes:
-      - db_data:/var/lib/mysql
+      - db_data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_PASSWORD: pgpass
 
 volumes:
   rust_target:

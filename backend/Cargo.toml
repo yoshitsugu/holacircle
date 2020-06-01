@@ -7,7 +7,7 @@ edition = "2018"
 [dependencies]
 actix-web = "2.0.0"
 actix-rt = "1.1.1"
-diesel = { version = "1.4.4", features = ["mysql", "r2d2"] }
+diesel = { version = "1.4.4", features = ["postgres", "r2d2"] }
 juniper = "0.14.2"
 r2d2 = "0.8.8"
 futures01 = "0.1.29"

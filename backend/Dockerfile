@@ -5,8 +5,8 @@ WORKDIR /usr/src/app
 RUN set -ex \
     && apt-get update \
     && apt-get install -y \
-                 default-mysql-client \
-                 default-libmysqlclient-dev \
+                 postgresql \
+                 libpq-dev \
                  libssl-dev \
                  fonts-vlgothic \
                  locales \
@@ -18,6 +18,6 @@ RUN set -ex \
 
 RUN cargo install cargo-watch
 RUN cargo install cargo-edit
-RUN cargo install diesel_cli --no-default-features --features mysql
+RUN cargo install diesel_cli --no-default-features --features postgres
 
 ENV HOST 0.0.0.0

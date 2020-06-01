@@ -14,9 +14,8 @@ pub mod graphql;
 pub mod models;
 pub mod schema;
 
-pub type DbPool = r2d2::Pool<ConnectionManager<MysqlConnection>>;
-pub type DbCon = r2d2::PooledConnection<ConnectionManager<MysqlConnection>>;
-
+pub type DbPool = r2d2::Pool<ConnectionManager<PgConnection>>;
+pub type DbCon = r2d2::PooledConnection<ConnectionManager<PgConnection>>;
 
 #[actix_rt::main]
 async fn main() -> std::io::Result<()> {
@@ -47,6 +46,6 @@ fn create_db_pool() -> DbPool {
 
     r2d2::Pool::builder()
         .max_size(3)
-        .build(ConnectionManager::<MysqlConnection>::new(database_url))
+        .build(ConnectionManager::<PgConnection>::new(database_url))
         .expect("failed to create db connection pool")
 }

@@ -1,15 +1,15 @@
 table! {
     clients (id) {
-        id -> Integer,
+        id -> Int4,
         name -> Varchar,
     }
 }
 
 table! {
     roles (id) {
-        id -> Integer,
-        client_id -> Integer,
-        role_id -> Nullable<Integer>,
+        id -> Int4,
+        client_id -> Int4,
+        role_id -> Nullable<Int4>,
         name -> Varchar,
         is_circle -> Bool,
         purpose -> Text,
