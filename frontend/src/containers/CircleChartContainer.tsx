@@ -95,7 +95,7 @@ const CircleChartContainer: FC<{}> = () => {
   return (
     <Wrapper>
       <Left>
-        <CircleInfo focus={circle} />
+        <CircleInfo focus={circle} refetch={queryResult.refetch} />
       </Left>
       <Right>
         <CircleChart rootCircle={rootCircle} />

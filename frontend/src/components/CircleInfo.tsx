@@ -1,12 +1,21 @@
 import React, { FC, useState, useEffect } from 'react';
 import styled from 'styled-components';
+import { ApolloQueryResult } from 'apollo-boost';
+import { setFocus } from 'redux/modules/focusModule';
+import { useDispatch } from 'react-redux';
 
 import Circle from 'models/Circle';
 import Role from 'models/Role';
 import HcInput from 'components/forms/HcInput';
 import HcTextarea from 'components/forms/HcTextarea';
 import HcButton from 'components/parts/HcButton';
-import { useUpdateRoleMutation, useNewRoleMutation } from 'generated/graphql';
+import {
+  useUpdateRoleMutation,
+  useNewRoleMutation,
+  GetRolesQueryVariables,
+  GetRolesQuery,
+  NewRoleMutation,
+} from 'generated/graphql';
 import HcMessage from 'components/parts/HcMessage';
 
 const Wrapper = styled.div`
@@ -70,17 +79,29 @@ const TitleForm = styled.div`
 
 type CircleInfoProps = {
   focus: Circle | Role;
+  refetch: (variables?: GetRolesQueryVariables | undefined) => Promise<ApolloQueryResult<GetRolesQuery>>;
 };
 
-const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
+const CircleInfo: FC<CircleInfoProps> = ({ focus, refetch }) => {
   const [editingName, setEditingName] = useState<string>(focus.name);
   const [editingPurpose, setEditingPurpose] = useState<string>(focus.purpose);
   const [editingDomains, setEditingDomains] = useState<string>(focus.domains);
   const [editingAccountabilities, setEditingAccountabilities] = useState<string>(focus.accountabilities);
   const [editMode, setEditMode] = useState<boolean>(false);
   const [isUpdate, setIsUpdate] = useState<boolean>(true);
+  const dispatch = useDispatch();
 
   const mutationCompletedHandler = (): void => {
+    setEditMode(false);
+    HcMessage({
+      text: '更新しました',
+      type: 'success',
+    }).show();
+  };
+
+  const addCompletedHandler = (m: NewRoleMutation): void => {
+    dispatch(setFocus(m.newRole.isCircle ? Number(m.newRole.id) : Number(m.newRole.roleId)));
+    refetch();
     setEditMode(false);
     HcMessage({
       text: '更新しました',
@@ -116,7 +137,7 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus }) => {
       accountabilities: editingAccountabilities,
       roleId: String(focus.id),
     },
-    onCompleted: mutationCompletedHandler,
+    onCompleted: addCompletedHandler,
     onError: mutationErrorHandler,
   });
 

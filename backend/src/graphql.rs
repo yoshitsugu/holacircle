@@ -224,6 +224,13 @@ impl RoleFields for Role {
         Ok(juniper::ID::new(self.role.id.to_string()))
     }
 
+    fn field_role_id(&self, _: &Executor<'_, Context>) -> FieldResult<Option<juniper::ID>> {
+        match self.role.role_id {
+          Some(role_id) => Ok(Some(juniper::ID::new(role_id.to_string()))),
+          None => Ok(None)
+        }
+    }
+
     fn field_name(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
         Ok(&self.role.name)
     }

@@ -16,6 +16,7 @@ export type Role = {
   __typename?: 'Role';
   id: Scalars['ID'];
   name: Scalars['String'];
+  roleId?: Maybe<Scalars['ID']>;
   isCircle: Scalars['Boolean'];
   purpose: Scalars['String'];
   domains: Scalars['String'];
@@ -76,7 +77,7 @@ export type GetRolesQuery = { __typename?: 'Query' } & {
 
 export type RoleFieldsFragment = { __typename?: 'Role' } & Pick<
   Role,
-  'id' | 'name' | 'isCircle' | 'purpose' | 'domains' | 'accountabilities'
+  'id' | 'roleId' | 'name' | 'isCircle' | 'purpose' | 'domains' | 'accountabilities'
 >;
 
 export type UpdateRoleMutationVariables = {
@@ -104,6 +105,7 @@ export type NewRoleMutation = { __typename?: 'Mutation' } & { newRole: { __typen
 export const RoleFieldsFragmentDoc = gql`
   fragment roleFields on Role {
     id
+    roleId
     name
     isCircle
     purpose
