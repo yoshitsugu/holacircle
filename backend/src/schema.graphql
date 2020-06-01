@@ -28,6 +28,7 @@ type Mutation {
 type Role {
   id: ID! @juniper(ownership: "owned")
   name: String!
+  roleId: ID @juniper(ownership: "owned")
   isCircle: Boolean!
   purpose: String!
   domains: String!

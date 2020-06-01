@@ -21,6 +21,7 @@ query getRoles {
 
 fragment roleFields on Role {
   id
+  roleId
   name
   isCircle
   purpose
