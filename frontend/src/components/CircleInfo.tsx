@@ -77,6 +77,16 @@ const TitleForm = styled.div`
   }
 `;
 
+const Members = styled.ul`
+  &.members {
+    margin-top: 20px;
+  }
+`;
+
+const Member = styled.li`
+  margin-bottom: 10px;
+`;
+
 type CircleInfoProps = {
   focus: Circle | Role;
   refetch: (variables?: GetRolesQueryVariables | undefined) => Promise<ApolloQueryResult<GetRolesQuery>>;
@@ -157,7 +167,6 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus, refetch }) => {
       newRoleMutation();
     }
   };
-
   return (
     <Wrapper>
       <PageTitle>
@@ -230,6 +239,14 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus, refetch }) => {
         ) : (
           <InfoDetail>{focus.accountabilities}</InfoDetail>
         )}
+      </InfoSection>
+      <InfoSection>
+        <h2>Members</h2>
+        <Members className="members">
+          {focus.members.map((m) => (
+            <Member>{m.name}</Member>
+          ))}
+        </Members>
       </InfoSection>
     </Wrapper>
   );

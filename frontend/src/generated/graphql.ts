@@ -12,23 +12,6 @@ export type Scalars = {
   Float: number;
 };
 
-export type Role = {
-  __typename?: 'Role';
-  id: Scalars['ID'];
-  name: Scalars['String'];
-  roleId?: Maybe<Scalars['ID']>;
-  isCircle: Scalars['Boolean'];
-  purpose: Scalars['String'];
-  domains: Scalars['String'];
-  accountabilities: Scalars['String'];
-  roles: Array<Role>;
-};
-
-export type Query = {
-  __typename?: 'Query';
-  role: Role;
-};
-
 export type Mutation = {
   __typename?: 'Mutation';
   updateRole: Role;
@@ -51,19 +34,53 @@ export type MutationNewRoleArgs = {
   roleId: Scalars['ID'];
 };
 
+export type Role = {
+  __typename?: 'Role';
+  id: Scalars['ID'];
+  name: Scalars['String'];
+  roleId?: Maybe<Scalars['ID']>;
+  isCircle: Scalars['Boolean'];
+  purpose: Scalars['String'];
+  domains: Scalars['String'];
+  accountabilities: Scalars['String'];
+  roles: Array<Role>;
+  members: Array<User>;
+};
+
+export type Query = {
+  __typename?: 'Query';
+  role: Role;
+};
+
+export type User = {
+  __typename?: 'User';
+  id: Scalars['ID'];
+  name: Scalars['String'];
+  email: Scalars['String'];
+};
+
 export type GetRolesQueryVariables = {};
 
 export type GetRolesQuery = { __typename?: 'Query' } & {
   role: { __typename?: 'Role' } & {
+    members: Array<{ __typename?: 'User' } & UserFieldsFragment>;
     roles: Array<
       { __typename?: 'Role' } & {
+        members: Array<{ __typename?: 'User' } & UserFieldsFragment>;
         roles: Array<
           { __typename?: 'Role' } & {
+            members: Array<{ __typename?: 'User' } & UserFieldsFragment>;
             roles: Array<
               { __typename?: 'Role' } & {
+                members: Array<{ __typename?: 'User' } & UserFieldsFragment>;
                 roles: Array<
                   { __typename?: 'Role' } & {
-                    roles: Array<{ __typename?: 'Role' } & RoleFieldsFragment>;
+                    members: Array<{ __typename?: 'User' } & UserFieldsFragment>;
+                    roles: Array<
+                      { __typename?: 'Role' } & {
+                        members: Array<{ __typename?: 'User' } & UserFieldsFragment>;
+                      } & RoleFieldsFragment
+                    >;
                   } & RoleFieldsFragment
                 >;
               } & RoleFieldsFragment
@@ -79,6 +96,8 @@ export type RoleFieldsFragment = { __typename?: 'Role' } & Pick<
   Role,
   'id' | 'roleId' | 'name' | 'isCircle' | 'purpose' | 'domains' | 'accountabilities'
 >;
+
+export type UserFieldsFragment = { __typename?: 'User' } & Pick<User, 'id' | 'name' | 'email'>;
 
 export type UpdateRoleMutationVariables = {
   id: Scalars['ID'];
@@ -113,20 +132,45 @@ export const RoleFieldsFragmentDoc = gql`
     accountabilities
   }
 `;
+export const UserFieldsFragmentDoc = gql`
+  fragment userFields on User {
+    id
+    name
+    email
+  }
+`;
 export const GetRolesDocument = gql`
   query getRoles {
     role {
       ...roleFields
+      members {
+        ...userFields
+      }
       roles {
         ...roleFields
+        members {
+          ...userFields
+        }
         roles {
           ...roleFields
+          members {
+            ...userFields
+          }
           roles {
             ...roleFields
+            members {
+              ...userFields
+            }
             roles {
               ...roleFields
+              members {
+                ...userFields
+              }
               roles {
                 ...roleFields
+                members {
+                  ...userFields
+                }
               }
             }
           }
@@ -135,6 +179,7 @@ export const GetRolesDocument = gql`
     }
   }
   ${RoleFieldsFragmentDoc}
+  ${UserFieldsFragmentDoc}
 `;
 
 /**

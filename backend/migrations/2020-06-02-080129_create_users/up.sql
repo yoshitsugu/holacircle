@@ -1,0 +1,6 @@
+CREATE TABLE users (
+  id SERIAL PRIMARY KEY,
+  client_id INT NOT NULL REFERENCES clients (id),
+  name VARCHAR NOT NULL,
+  email VARCHAR NOT NULL
+)

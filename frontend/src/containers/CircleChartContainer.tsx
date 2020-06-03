@@ -71,7 +71,6 @@ const CircleChartContainer: FC<{}> = () => {
     fetchPolicy: 'cache-and-network',
   });
   const dispatch = useDispatch();
-  // const { rootCircle } = useSelector((state: RootState) => state.circle);
   const rootCircle = queryResult.data ? Circle.from(queryResult.data.role) : null;
   const { focus } = useSelector((state: RootState) => state.focus);
   if (!rootCircle) {

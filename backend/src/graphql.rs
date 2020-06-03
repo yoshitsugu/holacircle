@@ -6,7 +6,7 @@ use actix_web::{web, Error, HttpResponse};
 use juniper::http::playground::playground_source;
 use juniper::{http::GraphQLRequest, Executor, FieldResult};
 use juniper_from_schema::graphql_schema_from_file;
-use juniper_eager_loading::{prelude::*, LoadFrom, HasMany, LoadChildrenOutput};
+use juniper_eager_loading::{prelude::*, LoadFrom, HasMany, LoadChildrenOutput, HasManyThrough};
 
 use diesel::prelude::*;
 
@@ -30,6 +30,7 @@ impl QueryFields for Query {
         trail: &QueryTrail<'_, Role, Walked>,
     ) -> FieldResult<Role> {
         use crate::schema::roles;
+        
         
         let model_role = roles::table.filter(roles::client_id.eq(1).and(roles::role_id.is_null()))
             .first::<models::Role>(&executor.context().db_con)?;
@@ -118,10 +119,19 @@ impl MutationFields for Mutation {
 }
 
 #[derive(Debug, Clone, PartialEq)]
+pub struct User {
+    id: i32,
+    name: String,
+    email: String
+}
+
+#[derive(Debug, Clone, PartialEq)]
 pub struct Role {
     role: models::Role,
 
     roles: HasMany<Role>,
+      
+    members: HasManyThrough<User>,
 }
 
 impl LoadFrom<models::Role> for models::Role {
@@ -156,6 +166,7 @@ impl GraphqlNodeForModel for Role {
         Self {
             role: model.clone(),
             roles: Default::default(),
+            members: Default::default(),
         }
     }
 }
@@ -177,11 +188,25 @@ impl EagerLoadAllChildren for Role {
             >::eager_load_children(nodes, models, ctx, &child_trail, &field_args)?;
         }
 
+        if let Some(child_trail) = trail.members().walk() {
+            let field_args = trail.members_args();
+
+            EagerLoadChildrenOfType::<
+                User,
+                EagerLoadingContextRoleForMembers,
+                _
+            >::eager_load_children(nodes, models, ctx, &child_trail, &field_args)?;
+        }
+
         Ok(())
     }
 }
+
 #[allow(missing_docs, dead_code)]
 struct EagerLoadingContextRoleForRoles;
+
+#[allow(missing_docs, dead_code)]
+struct EagerLoadingContextRoleForMembers;
 
 impl<'a>
     EagerLoadChildrenOfType<
@@ -216,6 +241,126 @@ impl<'a>
 
     fn association(node: &mut Self) -> &mut dyn Association<Role> {
         &mut node.roles
+    }
+}
+
+impl LoadFrom<models::Member> for models::User {
+    type Error = diesel::result::Error;
+    type Context = Context;
+
+    fn load(
+        members: &[models::Member],
+        _field_args: &(),
+        ctx: &Context,
+    ) -> Result<Vec<Self>, Self::Error> {
+        use crate::schema::users::dsl::*;
+        use diesel::pg::expression::dsl::any;
+        
+        let user_ids = members
+            .iter()
+            .map(|member| member.user_id)
+            .collect::<Vec<_>>();
+                
+        users
+            .filter(id.eq(any(&user_ids)))
+            .load::<models::User>(&ctx.db_con)
+    }
+}
+
+impl LoadFrom<models::Role> for models::Member {
+    type Error = diesel::result::Error;
+    type Context = Context;
+
+    fn load(
+        roles: &[models::Role],
+        _field_args: &(),
+        ctx: &Context,
+    ) -> Result<Vec<Self>, Self::Error> {
+        use crate::schema::members::dsl::*;
+        use diesel::pg::expression::dsl::any;
+
+        let role_ids = roles.iter().map(|role| role.id).collect::<Vec<_>>();
+
+        members
+            .filter(role_id.eq(any(role_ids)))
+            .load::<models::Member>(&ctx.db_con)
+    }
+}
+
+impl<'a>
+    EagerLoadChildrenOfType<
+        'a,
+        User,
+        EagerLoadingContextRoleForMembers,
+        models::Member>
+    for Role
+{
+    type FieldArguments = ();
+
+    #[allow(unused_variables)]
+    fn load_children(
+        models: &[Self::Model],
+        field_args: &Self::FieldArguments,
+        ctx: &Self::Context,
+    ) -> Result<LoadChildrenOutput<models::User, models::Member>, Self::Error> {
+        let join_models: Vec<models::Member> = LoadFrom::load(&models, field_args, ctx)?;
+        let child_models: Vec<models::User> = LoadFrom::load(&join_models, field_args, ctx)?;
+
+        let mut child_and_join_model_pairs = Vec::new();
+
+        for join_model in join_models {
+            for child_model in &child_models {
+                if join_model.user_id == child_model.id {
+                    let pair = (child_model.clone(), join_model.clone());
+                    child_and_join_model_pairs.push(pair);
+                }
+            }
+        }
+        
+        Ok(LoadChildrenOutput::ChildAndJoinModels(
+            child_and_join_model_pairs,
+        ))
+    }
+
+    fn is_child_of(
+        node: &Self,
+        child: &User,
+        join_model: &models::Member,
+        _field_args: &Self::FieldArguments,
+        _ctx: &Self::Context,
+    ) -> bool {
+        node.role.id == join_model.role_id && join_model.user_id == child.id
+    }
+
+    fn association(node: &mut Self) -> &mut dyn Association<User> {
+        &mut node.members
+    }
+}
+
+
+impl GraphqlNodeForModel for User {
+    type Model = models::User;
+    type Id = i32;
+    type Context = Context;
+    type Error = diesel::result::Error;
+
+    fn new_from_model(model: &Self::Model) -> Self {
+        Self {
+            id: model.id,
+            name: model.name.to_string(),
+            email: model.email.to_string()
+        }
+    }
+}
+
+impl EagerLoadAllChildren for User {
+    fn eager_load_all_children_for_each(
+        _nodes: &mut [Self],
+        _models: &[Self::Model],
+        _ctx: &Self::Context,
+        _trail: &juniper_from_schema::QueryTrail<'_, Self, juniper_from_schema::Walked>,
+    ) -> Result<(), Self::Error> {
+        Ok(())
     }
 }
 
@@ -258,7 +403,31 @@ impl RoleFields for Role {
     ) -> FieldResult<&Vec<Role>> {
         self.roles.try_unwrap().map_err(From::from)
     }
+
+    fn field_members(
+        &self, 
+        _executor: &Executor<'_, Context>,
+        _trail: &QueryTrail<'_, User, Walked>,
+    ) -> FieldResult<&Vec<User>> {
+        self.members.try_unwrap().map_err(From::from)
+    }
+
 }
+
+impl UserFields for User {
+    fn field_id(&self, _: &Executor<'_, Context>) -> FieldResult<juniper::ID> {
+        Ok(juniper::ID::new(self.id.to_string()))
+    }
+
+    fn field_name(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
+        Ok(&self.name)
+    }
+
+    fn field_email(&self, _: &Executor<'_, Context>) -> FieldResult<&String> {
+        Ok(&self.email)
+    }
+}
+
 
 fn playground() -> HttpResponse {
     let html = playground_source("");

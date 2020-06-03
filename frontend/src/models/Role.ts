@@ -15,7 +15,7 @@ const Role = {
     return {
       id: Number(c.id),
       name: c.name,
-      members: [],
+      members: c.members.map((m) => Member.from(m)),
       purpose: c.purpose,
       domains: c.domains,
       accountabilities: c.accountabilities,

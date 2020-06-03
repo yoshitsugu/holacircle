@@ -23,7 +23,7 @@ const Circle = {
     return {
       id: Number(c.id),
       name: c.name,
-      members: [],
+      members: c.members.map((m) => Member.from(m)),
       roles: c.roles.filter((r) => !r.isCircle).map((r) => Role.from(r)),
       circles: c.roles.filter((r) => r.isCircle).map((r) => Circle.from(r)),
       purpose: c.purpose,

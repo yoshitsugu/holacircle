@@ -34,4 +34,11 @@ type Role {
   domains: String!
   accountabilities: String!
   roles: [Role!]!
+  members: [User!]!
+}
+
+type User {
+  id: ID! @juniper(ownership: "owned")
+  name: String!
+  email: String!
 }

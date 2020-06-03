@@ -1,16 +1,34 @@
 query getRoles {
   role {
     ...roleFields
+    members {
+      ...userFields
+    }
     roles {
       ...roleFields
+      members {
+        ...userFields
+      }
       roles {
         ...roleFields
+        members {
+          ...userFields
+        }
         roles {
           ...roleFields
+          members {
+            ...userFields
+          }
           roles {
             ...roleFields
+            members {
+              ...userFields
+            }
             roles {
               ...roleFields
+              members {
+                ...userFields
+              }
             }
           }
         }
@@ -27,6 +45,12 @@ fragment roleFields on Role {
   purpose
   domains
   accountabilities
+}
+
+fragment userFields on User {
+  id
+  name
+  email
 }
 
 mutation updateRole($id: ID!, $name: String!, $purpose: String!, $domains: String!, $accountabilities: String!) {

@@ -35,3 +35,18 @@ pub struct NewRole {
     pub domains: String,
     pub accountabilities: String,
 }
+
+#[derive(Queryable, Debug, Clone, PartialEq)]
+pub struct User {
+    pub id: i32,
+    pub client_id: i32,
+    pub name: String,
+    pub email: String
+}
+
+#[derive(Queryable, Debug, Clone, PartialEq)]
+pub struct Member {
+    pub id: i32,
+    pub role_id: i32,
+    pub user_id: i32
+}
