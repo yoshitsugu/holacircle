@@ -60,6 +60,7 @@ const InfoSection = styled.section`
 
 const InfoDetail = styled.div`
   padding: 20px 0;
+  white-space: pre-wrap;
 `;
 
 const InfoForm = styled.div`
@@ -94,6 +95,7 @@ type CircleInfoProps = {
 
 const CircleInfo: FC<CircleInfoProps> = ({ focus, refetch }) => {
   const [editingName, setEditingName] = useState<string>(focus.name);
+  const [editingIsCircle, setEditingIsCircle] = useState<boolean>(false);
   const [editingPurpose, setEditingPurpose] = useState<string>(focus.purpose);
   const [editingDomains, setEditingDomains] = useState<string>(focus.domains);
   const [editingAccountabilities, setEditingAccountabilities] = useState<string>(focus.accountabilities);
@@ -142,6 +144,7 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus, refetch }) => {
   const [newRoleMutation, { loading: newLoading }] = useNewRoleMutation({
     variables: {
       name: editingName,
+      isCircle: editingIsCircle,
       purpose: editingPurpose,
       domains: editingDomains,
       accountabilities: editingAccountabilities,
@@ -206,6 +209,20 @@ const CircleInfo: FC<CircleInfoProps> = ({ focus, refetch }) => {
           </ButtonContainer>
         )}
       </PageTitle>
+      {editMode && !isUpdate && (
+        <InfoSection>
+          <h2>サークル</h2>
+          <label htmlFor="is-cirlce">
+            <input
+              id="is-circle"
+              type="checkbox"
+              checked={editingIsCircle}
+              onChange={(e) => setEditingIsCircle(e.target.checked)}
+            />{' '}
+            サークルとして追加
+          </label>
+        </InfoSection>
+      )}
       <InfoSection>
         <h2>Purpose</h2>
         {editMode ? (

@@ -28,6 +28,7 @@ export type MutationUpdateRoleArgs = {
 
 export type MutationNewRoleArgs = {
   name: Scalars['String'];
+  isCircle: Scalars['Boolean'];
   purpose: Scalars['String'];
   domains: Scalars['String'];
   accountabilities: Scalars['String'];
@@ -113,6 +114,7 @@ export type UpdateRoleMutation = { __typename?: 'Mutation' } & {
 
 export type NewRoleMutationVariables = {
   name: Scalars['String'];
+  isCircle: Scalars['Boolean'];
   purpose: Scalars['String'];
   domains: Scalars['String'];
   accountabilities: Scalars['String'];
@@ -247,8 +249,22 @@ export type UpdateRoleMutationOptions = ApolloReactCommon.BaseMutationOptions<
   UpdateRoleMutationVariables
 >;
 export const NewRoleDocument = gql`
-  mutation newRole($name: String!, $purpose: String!, $domains: String!, $accountabilities: String!, $roleId: ID!) {
-    newRole(name: $name, purpose: $purpose, domains: $domains, accountabilities: $accountabilities, roleId: $roleId) {
+  mutation newRole(
+    $name: String!
+    $isCircle: Boolean!
+    $purpose: String!
+    $domains: String!
+    $accountabilities: String!
+    $roleId: ID!
+  ) {
+    newRole(
+      name: $name
+      isCircle: $isCircle
+      purpose: $purpose
+      domains: $domains
+      accountabilities: $accountabilities
+      roleId: $roleId
+    ) {
       ...roleFields
     }
   }
@@ -270,6 +286,7 @@ export type NewRoleMutationFn = ApolloReactCommon.MutationFunction<NewRoleMutati
  * const [newRoleMutation, { data, loading, error }] = useNewRoleMutation({
  *   variables: {
  *      name: // value for 'name'
+ *      isCircle: // value for 'isCircle'
  *      purpose: // value for 'purpose'
  *      domains: // value for 'domains'
  *      accountabilities: // value for 'accountabilities'

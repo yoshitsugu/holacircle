@@ -29,6 +29,7 @@ pub struct Role {
 #[table_name = "roles"]
 pub struct NewRole {
     pub client_id: i32,
+    pub role_id: Option<i32>,
     pub name: String,
     pub is_circle: bool,
     pub purpose: String,

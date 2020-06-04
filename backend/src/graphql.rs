@@ -87,6 +87,7 @@ impl MutationFields for Mutation {
         executor: &Executor<'_, Context>,
         trail: &QueryTrail<'_, Role, Walked>,
         name: String,
+        is_circle: bool,
         purpose: String,
         domains: String,
         accountabilities: String,
@@ -95,15 +96,18 @@ impl MutationFields for Mutation {
         use crate::schema::roles;
         let role_id_i32 = role_id.to_string().parse::<i32>().unwrap();
 
+        let new_role = models::NewRole {
+            client_id: 1,
+            role_id: Some(role_id_i32),
+            name,
+            is_circle,
+            purpose,
+            domains,
+            accountabilities,
+        };
+
         diesel::insert_into(roles::table)
-            .values((
-                roles::client_id.eq(1),
-                roles::name.eq(name),
-                roles::purpose.eq(purpose),
-                roles::domains.eq(domains),
-                roles::accountabilities.eq(accountabilities),
-                roles::role_id.eq(role_id_i32),
-            ))
+            .values(&new_role)
             .get_result(&executor.context().db_con)
             .and_then(|model_role| {
                 let role = Role::new_from_model(&model_role);

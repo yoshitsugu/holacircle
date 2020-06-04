@@ -59,8 +59,22 @@ mutation updateRole($id: ID!, $name: String!, $purpose: String!, $domains: Strin
   }
 }
 
-mutation newRole($name: String!, $purpose: String!, $domains: String!, $accountabilities: String!, $roleId: ID!) {
-  newRole(name: $name, purpose: $purpose, domains: $domains, accountabilities: $accountabilities, roleId: $roleId) {
+mutation newRole(
+  $name: String!
+  $isCircle: Boolean!
+  $purpose: String!
+  $domains: String!
+  $accountabilities: String!
+  $roleId: ID!
+) {
+  newRole(
+    name: $name
+    isCircle: $isCircle
+    purpose: $purpose
+    domains: $domains
+    accountabilities: $accountabilities
+    roleId: $roleId
+  ) {
     ...roleFields
   }
 }

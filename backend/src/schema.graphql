@@ -18,6 +18,7 @@ type Mutation {
 
   newRole(
     name: String!
+    isCircle: Boolean!
     purpose: String!
     domains: String!
     accountabilities: String!
